@@ -130,18 +130,46 @@ describe('Integration & API Testing: Public & Admin Endpoints', () => {
 
   // 2. AUTHENTICATION & SECURITY
   describe('Authentication & Security', () => {
-    test('Rejects unauthorized requests to admin endpoints', async () => {
+    test('Admin login returns 200, JWT token in body, and user info', async () => {
+      const res = await request(app).post('/api/admin/login').send({
+        email: 'mohammejaseel90@gmail.com',
+        password: 'AdminPassword2026!#',
+      });
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.token).toBeDefined();
+      expect(typeof res.body.token).toBe('string');
+      expect(res.body.user).toBeDefined();
+    });
+
+    test('Rejects unauthorized requests to admin endpoints without token', async () => {
       const res = await request(app).get('/api/admin/stats');
       expect(res.status).toBe(401);
       expect(res.body.success).toBe(false);
     });
 
-    test('Allows authorized requests with valid Admin Token', async () => {
+    test('Allows authorized requests with Authorization Bearer header', async () => {
+      const res = await request(app)
+        .get('/api/admin/stats')
+        .set('Authorization', `Bearer ${adminToken}`);
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+    });
+
+    test('Allows authorized requests with valid admin_token cookie', async () => {
       const res = await request(app)
         .get('/api/admin/stats')
         .set('Cookie', [`admin_token=${adminToken}`]);
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
+    });
+
+    test('Rejects requests with invalid Bearer token with 401', async () => {
+      const res = await request(app)
+        .get('/api/admin/stats')
+        .set('Authorization', 'Bearer invalid_garbage_token_string');
+      expect(res.status).toBe(401);
+      expect(res.body.success).toBe(false);
     });
   });
 

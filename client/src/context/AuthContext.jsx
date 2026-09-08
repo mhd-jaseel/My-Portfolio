@@ -9,13 +9,22 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
+      const token = localStorage.getItem('admin_token');
+      // If there is no token in localStorage and no cookie, skip network call to prevent unnecessary 401s
+      if (!token) {
+        setAdmin(null);
+        setLoading(false);
+        return;
+      }
       const res = await api.get('/admin/me');
       if (res.data.success) {
         setAdmin(res.data.user);
       } else {
+        localStorage.removeItem('admin_token');
         setAdmin(null);
       }
     } catch (err) {
+      localStorage.removeItem('admin_token');
       setAdmin(null);
     } finally {
       setLoading(false);
@@ -29,6 +38,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await api.post('/admin/login', { email, password });
     if (res.data.success) {
+      if (res.data.token) {
+        localStorage.setItem('admin_token', res.data.token);
+      }
       setAdmin(res.data.user);
       return res.data;
     }
@@ -37,7 +49,10 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await api.post('/admin/logout');
+    } catch (e) {
+      // Ignore logout API network failure
     } finally {
+      localStorage.removeItem('admin_token');
       setAdmin(null);
     }
   };

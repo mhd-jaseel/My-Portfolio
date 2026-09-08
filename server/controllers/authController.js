@@ -28,7 +28,7 @@ const loginAdmin = async (req, res) => {
       { expiresIn: '7d' }
     );
 
-    // Set HttpOnly secure cookie
+    // Set HttpOnly secure cookie for same-domain or compatible browsers
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('admin_token', token, {
       httpOnly: true,
@@ -40,6 +40,7 @@ const loginAdmin = async (req, res) => {
     res.status(200).json({
       success: true,
       message: 'Admin login successful',
+      token,
       user: {
         id: user._id,
         name: user.name,
