@@ -15,6 +15,7 @@ import {
   Upload
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
+import { getMediaUrl } from '../../utils/mediaUtils';
 
 const AdminSkillsPage = () => {
   const [activeTab, setActiveTab] = useState('skills'); // 'skills' | 'scrolling-tools' | 'categories'
@@ -436,10 +437,10 @@ const AdminSkillsPage = () => {
     const icon = (iconStr || '').trim();
     const nameLower = (name || '').toLowerCase();
 
-    if (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('/')) {
+    if (icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('/') || icon.startsWith('uploads/')) {
       return (
         <img
-          src={icon}
+          src={getMediaUrl(icon)}
           alt={name}
           className="w-5 h-5 object-contain inline-block shrink-0 rounded-xs"
         />

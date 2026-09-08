@@ -11,6 +11,7 @@ import {
   Plus, 
   Loader2
 } from 'lucide-react';
+import { getMediaUrl } from '../../utils/mediaUtils';
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
@@ -158,9 +159,12 @@ const AdminDashboardPage = () => {
 
           <div className="flex items-center gap-4">
             <img
-              src={profile?.profileImage || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80'}
+              src={getMediaUrl(profile?.profileImage, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80')}
               alt={profile?.name}
               className="w-14 h-14 rounded-2xl object-cover border border-[#dce7fa]"
+              onError={(e) => {
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
+              }}
             />
             <div>
               <h3 className="text-sm font-bold text-[#1a1a1a]">{profile?.name}</h3>
@@ -205,7 +209,7 @@ const AdminDashboardPage = () => {
                 >
                   <div className="flex items-center gap-3">
                     <img
-                      src={p.thumbnail}
+                      src={getMediaUrl(p.thumbnail)}
                       alt={p.title}
                       className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-[#dce7fa]"
                     />

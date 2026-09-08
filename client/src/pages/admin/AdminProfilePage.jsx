@@ -11,6 +11,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
+import { getMediaUrl } from '../../utils/mediaUtils';
 
 const AdminProfilePage = () => {
   const [formData, setFormData] = useState({
@@ -266,17 +267,12 @@ const AdminProfilePage = () => {
                   <video
                     controls
                     playsInline
-                    preload="metadata"
-                    className="w-full h-full object-contain bg-black"
-                  >
-                    <source src={meetMeVideo.videoUrl} />
-                    Your browser does not support video playback.
-                  </video>
+                    className="w-full h-full object-cover"
+                  />
                 ) : (
-                  <div className="text-center p-6 space-y-1 text-[#8a99ad]">
-                    <Video className="w-8 h-8 mx-auto" />
-                    <p className="text-xs font-semibold text-[#1a1a1a]">No video uploaded</p>
-                    <p className="text-[11px]">Upload an MP4, WebM, or MOV video file</p>
+                  <div className="flex flex-col items-center justify-center text-[#8a99ad] p-4 text-center">
+                    <Video className="w-8 h-8 mb-1.5 opacity-50" />
+                    <span className="text-[11px] font-semibold">No video uploaded</span>
                   </div>
                 )}
 
@@ -342,9 +338,12 @@ const AdminProfilePage = () => {
           <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-[#f8fbff] border border-[#dce7fa]">
             <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[#dce7fa] bg-white shrink-0 shadow-xs">
               <img
-                src={formData.profileImage || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80'}
+                src={getMediaUrl(formData.profileImage, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80')}
                 alt="Profile photo"
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
+                }}
               />
               {uploadingImage && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center">

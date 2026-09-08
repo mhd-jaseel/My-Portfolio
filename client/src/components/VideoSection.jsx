@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, X } from 'lucide-react';
+import { getMediaUrl } from '../utils/mediaUtils';
 
 const VideoSection = ({ profile }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -8,8 +9,8 @@ const VideoSection = ({ profile }) => {
   // Check showOnHome setting from database profile
   const meetMeVideo = profile?.meetMeVideo;
   const showOnHome = meetMeVideo?.showOnHome !== undefined ? meetMeVideo.showOnHome : true;
-  const videoUrl = meetMeVideo?.videoUrl || '';
-  const thumbnailUrl = meetMeVideo?.thumbnailUrl || 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80';
+  const videoUrl = getMediaUrl(meetMeVideo?.videoUrl);
+  const thumbnailUrl = getMediaUrl(meetMeVideo?.thumbnailUrl, 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80');
 
   // If Admin disables this section (showOnHome === false), do NOT render the section at all
   if (!showOnHome) {

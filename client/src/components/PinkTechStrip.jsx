@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { getMediaUrl } from '../utils/mediaUtils';
 
 const PinkTechStrip = () => {
   const [tools, setTools] = useState([]);
@@ -41,11 +42,11 @@ const PinkTechStrip = () => {
     const iconStr = (tool.icon || '').trim();
     const nameLower = (tool.name || '').toLowerCase();
 
-    // If it's an uploaded image URL (starts with http or /)
-    if (iconStr.startsWith('http://') || iconStr.startsWith('https://') || iconStr.startsWith('/')) {
+    // If it's an uploaded image URL (starts with http or / or uploads/)
+    if (iconStr.startsWith('http://') || iconStr.startsWith('https://') || iconStr.startsWith('/') || iconStr.startsWith('uploads/')) {
       return (
         <img
-          src={iconStr}
+          src={getMediaUrl(iconStr)}
           alt={tool.name}
           className="w-4 h-4 object-contain brightness-0 invert inline-block shrink-0"
         />

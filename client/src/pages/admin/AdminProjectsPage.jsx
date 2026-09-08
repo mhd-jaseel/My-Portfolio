@@ -15,6 +15,7 @@ import {
   Search
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
+import { getMediaUrl } from '../../utils/mediaUtils';
 
 const AdminProjectsPage = () => {
   const [projects, setProjects] = useState([]);
@@ -225,7 +226,7 @@ const AdminProjectsPage = () => {
                 {/* Thumbnail */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-[#f0f6ff] border border-[#dce7fa] shrink-0 relative">
                   <img
-                    src={project.thumbnail}
+                    src={getMediaUrl(project.thumbnail)}
                     alt={project.title}
                     className="w-full h-full object-cover"
                   />

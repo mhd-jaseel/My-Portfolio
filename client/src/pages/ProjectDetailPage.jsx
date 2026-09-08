@@ -11,6 +11,7 @@ import {
   Loader2 
 } from 'lucide-react';
 import { Github } from '../components/SocialIcons';
+import { getMediaUrl } from '../utils/mediaUtils';
 
 const ProjectDetailPage = () => {
   const { slug } = useParams();
@@ -142,7 +143,7 @@ const ProjectDetailPage = () => {
           {/* Hero Image */}
           <div className="rounded-3xl overflow-hidden border border-[#C8D6FF]/80 shadow-xl mb-14 aspect-[16/9] bg-white">
             <img
-              src={project.thumbnail}
+              src={getMediaUrl(project.thumbnail)}
               alt={project.title}
               fetchPriority="high"
               loading="eager"
@@ -189,32 +190,36 @@ const ProjectDetailPage = () => {
               )}
 
               {/* Challenges & Solutions */}
-              {((project.challenges && project.challenges.length > 0) || (project.solutions && project.solutions.length > 0)) && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  {project.challenges && project.challenges.length > 0 && (
-                    <div className="bg-white rounded-3xl border border-[#dce7fa] p-6 sm:p-8 space-y-3 shadow-sm">
-                      <h3 className="text-2xl font-normal text-[#1a1a1a] font-['Bebas_Neue']">
-                        CHALLENGES
-                      </h3>
-                      <ul className="space-y-2">
-                        {project.challenges.map((ch, idx) => (
-                          <li key={idx} className="text-xs text-[#667085] leading-relaxed list-disc list-inside">
-                            {ch}
+              {(project.challenges?.length > 0 || project.solutions?.length > 0) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {project.challenges?.length > 0 && (
+                    <div className="p-7 rounded-3xl bg-white border border-[#dce7fa] shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 text-rose-500 font-bold text-sm uppercase tracking-wider">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
+                        <span>Challenges Overcome</span>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {project.challenges.map((c, i) => (
+                          <li key={i} className="text-xs sm:text-sm text-[#444444] leading-relaxed flex items-start gap-2">
+                            <span className="text-rose-400 font-bold shrink-0">&bull;</span>
+                            <span>{c}</span>
                           </li>
                         ))}
                       </ul>
                     </div>
                   )}
 
-                  {project.solutions && project.solutions.length > 0 && (
-                    <div className="bg-white rounded-3xl border border-[#dce7fa] p-6 sm:p-8 space-y-3 shadow-sm">
-                      <h3 className="text-2xl font-normal text-[#1683FF] font-['Bebas_Neue']">
-                        SOLUTIONS
-                      </h3>
-                      <ul className="space-y-2">
-                        {project.solutions.map((sol, idx) => (
-                          <li key={idx} className="text-xs text-[#667085] leading-relaxed list-disc list-inside">
-                            {sol}
+                  {project.solutions?.length > 0 && (
+                    <div className="p-7 rounded-3xl bg-white border border-[#dce7fa] shadow-sm space-y-4">
+                      <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm uppercase tracking-wider">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+                        <span>Architectural Solutions</span>
+                      </div>
+                      <ul className="space-y-2.5">
+                        {project.solutions.map((s, i) => (
+                          <li key={i} className="text-xs sm:text-sm text-[#444444] leading-relaxed flex items-start gap-2">
+                            <span className="text-emerald-500 font-bold shrink-0">&bull;</span>
+                            <span>{s}</span>
                           </li>
                         ))}
                       </ul>
@@ -233,7 +238,7 @@ const ProjectDetailPage = () => {
                     {project.gallery.map((imgUrl, gIdx) => (
                       <div key={gIdx} className="rounded-2xl overflow-hidden border border-[#dce7fa] aspect-video bg-white shadow-md">
                         <img
-                          src={imgUrl}
+                          src={getMediaUrl(imgUrl)}
                           alt={`${project.title} artifact ${gIdx + 1}`}
                           decoding="async"
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"

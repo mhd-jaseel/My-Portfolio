@@ -15,6 +15,7 @@ import {
   HardDrive
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess } from '../../utils/alertUtils';
+import { getMediaUrl } from '../../utils/mediaUtils';
 
 const AdminMediaPage = () => {
   const [file, setFile] = useState(null);
@@ -334,7 +335,7 @@ const AdminMediaPage = () => {
                   <div className="w-full h-40 rounded-xl bg-[#f8fbff] border border-[#e8f2ff] overflow-hidden flex items-center justify-center relative group">
                     {item.type === 'image' || item.type === 'svg' ? (
                       <img
-                        src={item.url}
+                        src={getMediaUrl(item.url)}
                         alt={item.filename}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                         onError={(e) => {
@@ -345,7 +346,7 @@ const AdminMediaPage = () => {
                     ) : item.type === 'video' ? (
                       <div className="w-full h-full bg-black relative flex items-center justify-center">
                         <video
-                          src={item.url}
+                          src={getMediaUrl(item.url)}
                           preload="metadata"
                           className="w-full h-full object-cover opacity-80"
                         />

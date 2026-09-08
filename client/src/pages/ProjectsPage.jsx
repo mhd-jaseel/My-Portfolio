@@ -6,6 +6,7 @@ import api from '../services/api';
 import { ArrowRight, Sparkles, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { getMediaUrl } from '../utils/mediaUtils';
 
 // In-memory cache to prevent refetching when navigating back and forth
 let cachedProjects = null;
@@ -142,7 +143,7 @@ const ProjectsPage = () => {
                         className="block relative rounded-3xl overflow-hidden bg-white border border-[#D6E3FC] shadow-lg shadow-[#A2B1FF]/10 aspect-[16/10] group-hover:shadow-xl transition-all duration-300"
                       >
                         <img
-                          src={project.thumbnail}
+                          src={getMediaUrl(project.thumbnail)}
                           alt={project.title}
                           loading="lazy"
                           decoding="async"

@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { getMediaUrl } from '../utils/mediaUtils';
 
 const ProjectsSection = ({ projects = [] }) => {
   // Display only the first 4 projects on Home page
@@ -41,7 +42,7 @@ const ProjectsSection = ({ projects = [] }) => {
               className="block relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#dce7fa] shadow-sm aspect-[16/9] group-hover:shadow-lg transition-all duration-300"
             >
               <img
-                src={project.thumbnail}
+                src={getMediaUrl(project.thumbnail)}
                 alt={project.title}
                 loading="lazy"
                 decoding="async"

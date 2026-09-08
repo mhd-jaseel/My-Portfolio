@@ -7,6 +7,7 @@ import {
   GitCommit, Send, Terminal, UploadCloud, Triangle, Flame, Image as ImageIcon,
   CreditCard, FileText
 } from 'lucide-react';
+import { getMediaUrl } from '../utils/mediaUtils';
 
 const lucideIconMap = {
   Code, FileCode2, Layout, Palette, Atom, Zap, Compass, Wind, Box, Sparkles,
@@ -34,12 +35,13 @@ const SkillIcon = ({ icon, name = '', className = 'w-4 h-4', imgClassName = 'w-f
     iconStr.startsWith('http://') || 
     iconStr.startsWith('https://') || 
     iconStr.startsWith('/uploads') || 
+    iconStr.startsWith('uploads/') || 
     iconStr.startsWith('data:image') ||
     iconStr.includes('/')
   ) {
     return (
       <img
-        src={iconStr}
+        src={getMediaUrl(iconStr)}
         alt={name || 'Skill icon'}
         className={`${imgClassName} shrink-0`}
         loading="lazy"

@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
+import { getMediaUrl } from '../utils/mediaUtils';
 
 const Hero = ({ profile }) => {
-  const profileImg = profile?.profileImage || '/developer_hero.jpg';
+  const profileImg = getMediaUrl(profile?.profileImage, '/developer_hero.jpg');
   const name = profile?.name || 'MOHAMMED JASEEL';
   const bio = profile?.bio || 'A Full Stack Developer who loves building modern web applications with scalable backends to deliver meaningful digital solutions.';
 
@@ -117,6 +118,11 @@ const Hero = ({ profile }) => {
                   decoding="async"
                   width="430"
                   height="520"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== window.location.origin + '/developer_hero.jpg' && !e.currentTarget.src.endsWith('/developer_hero.jpg')) {
+                      e.currentTarget.src = '/developer_hero.jpg';
+                    }
+                  }}
                   className="w-full h-auto max-h-[64vh] object-contain object-top mix-blend-multiply contrast-[1.02] brightness-[1.01]"
                 />
               </div>

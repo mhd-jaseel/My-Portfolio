@@ -13,6 +13,7 @@ import {
   Code2
 } from 'lucide-react';
 import { showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
+import { getMediaUrl } from '../../utils/mediaUtils';
 
 const AdminProjectFormPage = () => {
   const { id } = useParams();
@@ -383,7 +384,7 @@ const AdminProjectFormPage = () => {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="w-28 h-20 rounded-xl overflow-hidden bg-[#f8fbff] border border-[#dce7fa] shrink-0">
                 {formData.thumbnail ? (
-                  <img src={formData.thumbnail} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                  <img src={getMediaUrl(formData.thumbnail)} alt="Thumbnail preview" className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8a99ad]">No Image</div>
                 )}
@@ -433,7 +434,7 @@ const AdminProjectFormPage = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {formData.gallery?.map((imgUrl, idx) => (
                 <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-[#dce7fa] group bg-[#f8fbff]">
-                  <img src={imgUrl} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                  <img src={getMediaUrl(imgUrl)} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
                   <button
                     type="button"
                     onClick={() => removeGalleryImage(idx)}
