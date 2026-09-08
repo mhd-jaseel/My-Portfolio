@@ -1,7 +1,23 @@
 import axios from 'axios';
 
+// Normalize API base URL:
+// In local development, defaults to '/api' (proxied by Vite to localhost:5000).
+// In production (Vercel), uses VITE_API_URL ensuring proper '/api' prefix without duplication.
+const getBaseURL = () => {
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (!envUrl) {
+    return '/api';
+  }
+  const clean = envUrl.trim().replace(/\/+$/, '');
+  // If user provided https://my-backend.com without /api, append /api
+  if (!clean.endsWith('/api')) {
+    return `${clean}/api`;
+  }
+  return clean;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: getBaseURL(),
   withCredentials: true,
   timeout: 8000,
   headers: {
