@@ -20,6 +20,14 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Portfolio API is running',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.use('/api', publicRoutes);
 app.use('/api/admin', adminRoutes);
 
@@ -62,7 +70,18 @@ describe('Integration & API Testing: Public & Admin Endpoints', () => {
     }
   });
 
-  // 1. PUBLIC ENDPOINTS
+  // 1. ROOT & HEALTH CHECK
+  describe('Root & Health Endpoints', () => {
+    test('GET / returns 200 and running status', async () => {
+      const res = await request(app).get('/');
+      expect(res.status).toBe(200);
+      expect(res.body.success).toBe(true);
+      expect(res.body.message).toBe('Portfolio API is running');
+      expect(res.body.environment).toBeDefined();
+    });
+  });
+
+  // 2. PUBLIC ENDPOINTS
   describe('Public API Endpoints', () => {
     test('GET /api/profile returns 200 and profile payload', async () => {
       const res = await request(app).get('/api/profile');
