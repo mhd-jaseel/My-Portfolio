@@ -1,5 +1,5 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
+const mongoose = require('../../server/node_modules/mongoose');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
@@ -11,6 +11,8 @@ const cors = require('cors');
 
 const publicRoutes = require('../../server/routes/publicRoutes');
 const adminRoutes = require('../../server/routes/adminRoutes');
+const User = require('../../server/models/User');
+const Project = require('../../server/models/Project');
 
 const app = express();
 app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
@@ -25,6 +27,8 @@ describe('Integration & API Testing: Public & Admin Endpoints', () => {
   let adminToken;
   let testProjectId;
 
+  jest.setTimeout(30000);
+
   beforeAll(async () => {
     const mongoURI = process.env.MONGODB_URI;
     if (!mongoURI) {
@@ -35,7 +39,6 @@ describe('Integration & API Testing: Public & Admin Endpoints', () => {
     }
 
     // Generate valid admin token for testing
-    const User = require('../../server/models/User');
     let admin = await User.findOne({ role: 'admin' });
     if (!admin) {
       admin = await User.create({
@@ -55,7 +58,6 @@ describe('Integration & API Testing: Public & Admin Endpoints', () => {
 
   afterAll(async () => {
     if (testProjectId) {
-      const Project = require('../../server/models/Project');
       await Project.findByIdAndDelete(testProjectId);
     }
   });
