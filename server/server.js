@@ -4,7 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const path = require('path');
-require('dotenv').config();
+require('dotenv').config({ path: [path.resolve(__dirname, '../.env'), path.resolve(__dirname, '.env')] });
 
 const publicRoutes = require('./routes/publicRoutes');
 const adminRoutes = require('./routes/adminRoutes');
@@ -112,8 +112,8 @@ app.use((err, req, res, next) => {
   const isProduction = process.env.NODE_ENV === 'production';
   res.status(statusCode).json({
     success: false,
-    message: isProduction && statusCode === 500 
-      ? 'An unexpected error occurred. Please try again later.' 
+    message: isProduction && statusCode === 500
+      ? 'An unexpected error occurred. Please try again later.'
       : (err.message || 'Internal Server Error'),
   });
 });
@@ -121,7 +121,7 @@ app.use((err, req, res, next) => {
 // MongoDB Connection & Server Start
 const connectDB = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jaseel_portfolio';
+    const mongoURI = process.env.MONGODB_URI;
     await mongoose.connect(mongoURI);
     console.log('MongoDB Connected Successfully');
   } catch (err) {
