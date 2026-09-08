@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40" fill="none">
+  <!-- Clean rounded background with soft subtle border for high legibility at 16x16 / 32x32 -->
+  <rect width="40" height="40" rx="8" fill="#FFFFFF"/>
+  <rect x="0.5" y="0.5" width="39" height="39" rx="7.5" stroke="#E2E8F0" stroke-width="1"/>
+  
+  <!-- M: clean geometric strokes matching portfolio logo -->
+  <path d="M 6 31 L 6 13 L 14.5 25 L 23 13 L 23 31" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- J: vertical stem with bottom curve matching portfolio logo -->
+  <path d="M 32 13 L 32 25 C 32 29 29.5 31.5 25.5 31.5" stroke="#1A1A1A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+  
+  <!-- Blue accent bar above J -->
+  <path d="M 28 7.5 L 35.5 7.5" stroke="#1683FF" stroke-width="3" stroke-linecap="round" />
+</svg>

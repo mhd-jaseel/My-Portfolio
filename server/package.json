@@ -1,0 +1,10 @@
+{
+  "name": "jaseel-portfolio-server-sub",
+  "version": "1.0.0",
+  "description": "Server directory runner",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  }
+}

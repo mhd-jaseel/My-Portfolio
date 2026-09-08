@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-page: #ffffff;
+    --text-main: #181818;
+    --text-muted: #5e6573;
+    --blue-accent: #1683ff;
+    --border-light: #e5e7eb;
+  }
+
+  body {
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  .font-display {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.015em;
+  }
+
+  .font-serif-italic {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-style: italic;
+  }
+}
+
+/* 1. Continuous Full-width Seamless Page Background - Pure White */
+.page-continuous-wrapper {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #ffffff;
+  background-image: none;
+  position: relative;
+  padding: 0;
+  margin: 0;
+  overflow-x: hidden;
+}
+
+/* 2. Inner Content Canvas: Balanced Centered Container with refined side breathing room */
+.content-canvas {
+  width: 100%;
+  max-width: 1380px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(24px, 5vw, 76px);
+  padding-right: clamp(24px, 5vw, 76px);
+  position: relative;
+}
+
+/* 3. Reference Oval Blue Pill Badge */
+.pink-pill-badge, .blue-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 18px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1px solid rgba(22, 131, 255, 0.4);
+  color: #1683ff;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  box-shadow: 0 2px 10px rgba(22, 131, 255, 0.08);
+}
+
+/* 4. Reference Glowing Blue Pill Button (Standard & Small) */
+.btn-pink-pill, .btn-blue-pill {
+  background: linear-gradient(135deg, #1683ff 0%, #0066e0 100%);
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 9px 22px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  box-shadow: 0 4px 14px rgba(22, 131, 255, 0.35);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-pink-pill:hover, .btn-blue-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(22, 131, 255, 0.55);
+}
+
+.btn-pink-pill-sm, .btn-blue-pill-sm {
+  background: linear-gradient(135deg, #1683ff 0%, #0066e0 100%);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 7px 18px;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 3px 12px rgba(22, 131, 255, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-pink-pill-sm:hover, .btn-blue-pill-sm:hover {
+  transform: translateY(-1.5px);
+  box-shadow: 0 5px 16px rgba(22, 131, 255, 0.5);
+}
+
+/* 5. Reference White Toolbox Card */
+.ref-toolbox-card {
+  background: #ffffff;
+  border: 1px solid #dce7fa;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px -6px rgba(100, 140, 220, 0.08);
+  transition: all 0.25s ease;
+}
+
+.ref-toolbox-card:hover {
+  border-color: rgba(255, 79, 216, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -8px rgba(255, 79, 216, 0.2);
+}
+
+/* Marquee Smooth Continuous Right to Left Animation */
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 25s linear infinite;
+}
+
+.animate-marquee-track:hover {
+  animation-play-state: paused;
+}
+
+/* 6. Exact Hero Photo Masking & Glow */
+.hero-photo-wrapper {
+  position: relative;
+  width: 370px;
+  max-width: 90%;
+  margin: 0 auto;
+}
+
+.hero-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 480px;
+  height: 480px;
+  background: radial-gradient(circle, rgba(236,72,153,0.16) 0%, rgba(236,72,153,0) 70%);
+  filter: blur(45px);
+  z-index: 0;
+}
+
+.hero-photo {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: auto;
+  -webkit-mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, black 45%, rgba(0,0,0,0.6) 65%, transparent 90%);
+  mask-image: radial-gradient(ellipse 60% 70% at 50% 45%, black 45%, rgba(0,0,0,0.6) 65%, transparent 90%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
