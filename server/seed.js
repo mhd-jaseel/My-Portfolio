@@ -95,7 +95,7 @@ const seedDatabase = async () => {
           'Integrated Firebase Cloud Messaging (FCM) background workers coupled with reactive React Context consumers.'
         ],
         githubUrl: 'https://github.com/mhd-jaseel',
-        liveUrl: '',
+        liveUrl: 'https://dynavue.in',
         featured: true,
         showOnHome: true,
         homeDisplayOrder: 1,
@@ -138,7 +138,7 @@ const seedDatabase = async () => {
           'Designed idempotent webhook ingestion with HMAC-SHA256 signature audits and automated transaction status reconciliation.'
         ],
         githubUrl: 'https://github.com/mhd-jaseel',
-        liveUrl: 'https://vaultco.online',
+        liveUrl: 'https://vaultco.online/',
         featured: true,
         showOnHome: true,
         homeDisplayOrder: 2,
@@ -177,7 +177,7 @@ const seedDatabase = async () => {
           'Structured strict Express middleware chains for authentication and sanitized REST error outputs.'
         ],
         githubUrl: 'https://github.com/mhd-jaseel',
-        liveUrl: '',
+        liveUrl: 'https://kmsupermarket.online/',
         featured: true,
         showOnHome: true,
         homeDisplayOrder: 3,

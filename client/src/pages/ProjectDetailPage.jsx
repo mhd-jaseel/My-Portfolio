@@ -114,18 +114,6 @@ const ProjectDetailPage = () => {
 
             {/* Action Links */}
             <div className="pt-2 flex flex-wrap items-center gap-3">
-              {project.liveUrl && (
-                <a
-                  href={project.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn-blue-pill px-7 py-3 text-xs tracking-wider uppercase inline-flex items-center gap-2"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  <span>Visit Live Platform</span>
-                </a>
-              )}
-
               {project.githubUrl && (
                 <a
                   href={project.githubUrl}
@@ -134,7 +122,19 @@ const ProjectDetailPage = () => {
                   className="px-6 py-3 rounded-full bg-white border border-[#C8D6FF] text-[#1a1a1a] hover:border-[#1683FF] hover:text-[#1683FF] text-xs font-semibold tracking-wider uppercase transition-all flex items-center gap-2 shadow-sm"
                 >
                   <Github className="w-4 h-4" />
-                  <span>Source Code</span>
+                  <span>SOURCE CODE</span>
+                </a>
+              )}
+
+              {project.liveUrl && (
+                <a
+                  href={project.liveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-blue-pill px-7 py-3 text-xs tracking-wider uppercase inline-flex items-center gap-2"
+                >
+                  <span>LIVE VIEW</span>
+                  <ExternalLink className="w-4 h-4" />
                 </a>
               )}
             </div>
