@@ -74,4 +74,9 @@ const projectSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+// Optimize indexing for fast query resolution on MongoDB Atlas
+projectSchema.index({ isActive: 1, showOnHome: 1, homeDisplayOrder: 1, order: 1 });
+projectSchema.index({ isActive: 1, order: 1, createdAt: 1 });
+
 module.exports = mongoose.model('Project', projectSchema);
+

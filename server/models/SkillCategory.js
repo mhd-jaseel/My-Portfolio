@@ -36,4 +36,8 @@ const skillCategorySchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
+skillCategorySchema.index({ isActive: 1, showOnHome: 1, displayOrder: 1 });
+skillCategorySchema.index({ isActive: 1, displayOrder: 1 });
+
 module.exports = mongoose.model('SkillCategory', skillCategorySchema);
+

@@ -11,7 +11,10 @@ const Experience = require('./models/Experience');
 
 const seedDatabase = async () => {
   try {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jaseel_portfolio';
+    const mongoURI = process.env.MONGODB_URI;
+    if (!mongoURI) {
+      throw new Error('MONGODB_URI is not defined in environment variables. Please check your .env file.');
+    }
     await mongoose.connect(mongoURI);
     console.log('Connected to MongoDB for seeding...');
 

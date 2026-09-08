@@ -26,7 +26,10 @@ describe('Integration & API Testing: Public & Admin Endpoints', () => {
   let testProjectId;
 
   beforeAll(async () => {
-    const mongoURI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/jaseel_portfolio';
+    const mongoURI = process.env.MONGODB_URI;
+    if (!mongoURI) {
+      throw new Error('MONGODB_URI is not set in environment variables');
+    }
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(mongoURI);
     }

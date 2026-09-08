@@ -22,32 +22,33 @@ const contactLimiter = rateLimit({
   message: { success: false, message: 'Too many messages sent from this IP, please try again later.' },
 });
 
-// Public Route Validators
+// Public Route Validators & Cache
 const {
   validateContactMessage,
   validateQueryParams,
 } = require('../middleware/validateMiddleware');
+const { publicCache } = require('../middleware/cacheMiddleware');
 
-// Profile
-router.get('/profile', getPublicProfile);
+// Profile (Cache 60s)
+router.get('/profile', publicCache(60), getPublicProfile);
 
-// Projects
-router.get('/projects', validateQueryParams, getPublicProjects);
-router.get('/projects/:slug', getPublicProjectBySlug);
+// Projects (Cache 60s)
+router.get('/projects', validateQueryParams, publicCache(60), getPublicProjects);
+router.get('/projects/:slug', publicCache(60), getPublicProjectBySlug);
 
-// Skill Categories
-router.get('/skill-categories', getPublicSkillCategories);
-router.get('/skill-categories/home', getPublicHomeSkillCategories);
-router.get('/skill-categories/:slug', getPublicSkillCategoryBySlug);
+// Skill Categories (Cache 60s)
+router.get('/skill-categories', publicCache(60), getPublicSkillCategories);
+router.get('/skill-categories/home', publicCache(60), getPublicHomeSkillCategories);
+router.get('/skill-categories/:slug', publicCache(60), getPublicSkillCategoryBySlug);
 
-// Skills
-router.get('/skills', getPublicSkills);
-router.get('/skills/home', getPublicHomeSkills);
-router.get('/skills/marquee', getPublicMarqueeTools);
-router.get('/marquee-tools', getPublicMarqueeTools);
+// Skills (Cache 60s)
+router.get('/skills', publicCache(60), getPublicSkills);
+router.get('/skills/home', publicCache(60), getPublicHomeSkills);
+router.get('/skills/marquee', publicCache(60), getPublicMarqueeTools);
+router.get('/marquee-tools', publicCache(60), getPublicMarqueeTools);
 
-// Experience
-router.get('/experience', getPublicExperience);
+// Experience (Cache 60s)
+router.get('/experience', publicCache(60), getPublicExperience);
 
 // Contact
 router.post('/contact', contactLimiter, validateContactMessage, submitContactMessage);

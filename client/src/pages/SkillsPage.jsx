@@ -11,30 +11,45 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
+let cachedCategories = null;
+
 const SkillsPage = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState(cachedCategories || []);
+  const [loading, setLoading] = useState(!cachedCategories);
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategorySlug, setSelectedCategorySlug] = useState('all');
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchSkillsData = async () => {
       try {
-        setLoading(true);
-        const res = await api.get('/skill-categories');
+        if (!cachedCategories) {
+          setLoading(true);
+        }
+        const res = await api.get('/skill-categories', { signal: controller.signal });
         if (res.data?.data) {
+          cachedCategories = res.data.data;
           setCategories(res.data.data);
+          setError(null);
         }
       } catch (err) {
+        if (err.name === 'CanceledError' || err.code === 'ERR_CANCELED') return;
         console.error('Failed to load skills:', err);
-        setError('Unable to load skills right now. Please try again later.');
+        if (!cachedCategories) {
+          setError('Unable to load skills right now. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchSkillsData();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   // Filter categories and skills based on search & category pill

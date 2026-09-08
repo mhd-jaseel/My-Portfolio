@@ -7,6 +7,7 @@ const SkillCategory = require('../models/SkillCategory');
 const Experience = require('../models/Experience');
 const Message = require('../models/Message');
 const { processAndUpload, deleteMediaFile } = require('../middleware/uploadMiddleware');
+const { invalidateCache } = require('../middleware/cacheMiddleware');
 
 // PROFILE CMS
 const updateProfile = async (req, res) => {
@@ -18,6 +19,7 @@ const updateProfile = async (req, res) => {
       Object.assign(profile, req.body);
     }
     await profile.save();
+    invalidateCache('profile');
     res.status(200).json({ success: true, message: 'Profile updated successfully', data: profile });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -88,6 +90,7 @@ const createProject = async (req, res) => {
       order: order ? Number(order) : 0,
     });
 
+    invalidateCache('projects');
     res.status(201).json({ success: true, message: 'Project created successfully', data: newProject });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -127,6 +130,7 @@ const updateProject = async (req, res) => {
     }
 
     const updated = await Project.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    invalidateCache('projects');
     res.status(200).json({ success: true, message: 'Project updated successfully', data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -138,6 +142,7 @@ const deleteProject = async (req, res) => {
     const { id } = req.params;
     const deleted = await Project.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ success: false, message: 'Project not found' });
+    invalidateCache('projects');
     res.status(200).json({ success: true, message: 'Project deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -188,6 +193,7 @@ const createSkillCategory = async (req, res) => {
       showOnHome: showOnHome !== undefined ? Boolean(showOnHome) : true,
     });
 
+    invalidateCache('skills');
     res.status(201).json({ success: true, message: 'Skill Category created successfully', data: newCategory });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -210,6 +216,7 @@ const updateSkillCategory = async (req, res) => {
     }
 
     const updated = await SkillCategory.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
+    invalidateCache('skills');
     res.status(200).json({ success: true, message: 'Category updated successfully', data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -225,6 +232,7 @@ const deleteSkillCategory = async (req, res) => {
     // Optional: Also clean up or unassign skills linked to this category
     await Skill.deleteMany({ category: id });
 
+    invalidateCache('skills');
     res.status(200).json({ success: true, message: 'Category and associated skills deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -274,6 +282,7 @@ const createSkill = async (req, res) => {
     });
 
     const populated = await Skill.findById(newSkill._id).populate('category', 'name slug icon');
+    invalidateCache('skills');
     res.status(201).json({ success: true, message: 'Skill created successfully', data: populated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -302,6 +311,7 @@ const updateSkill = async (req, res) => {
     const updated = await Skill.findByIdAndUpdate(id, updateData, { new: true, runValidators: true })
       .populate('category', 'name slug icon');
     
+    invalidateCache('skills');
     res.status(200).json({ success: true, message: 'Skill updated successfully', data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -312,6 +322,7 @@ const deleteSkill = async (req, res) => {
   try {
     const deleted = await Skill.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ success: false, message: 'Skill not found' });
+    invalidateCache('skills');
     res.status(200).json({ success: true, message: 'Skill deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -338,6 +349,7 @@ const createExperience = async (req, res) => {
       data.technologies = data.technologies.split(',').map(t => t.trim()).filter(Boolean);
     }
     const newExp = await Experience.create(data);
+    invalidateCache('experience');
     res.status(201).json({ success: true, message: 'Experience added successfully', data: newExp });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -355,6 +367,7 @@ const updateExperience = async (req, res) => {
     }
     const updated = await Experience.findByIdAndUpdate(req.params.id, data, { new: true });
     if (!updated) return res.status(404).json({ success: false, message: 'Experience not found' });
+    invalidateCache('experience');
     res.status(200).json({ success: true, message: 'Experience updated successfully', data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -365,6 +378,7 @@ const deleteExperience = async (req, res) => {
   try {
     const deleted = await Experience.findByIdAndDelete(req.params.id);
     if (!deleted) return res.status(404).json({ success: false, message: 'Experience not found' });
+    invalidateCache('experience');
     res.status(200).json({ success: true, message: 'Experience deleted successfully' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

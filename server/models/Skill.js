@@ -58,4 +58,10 @@ skillSchema.pre('save', function (next) {
   next();
 });
 
+// Indexes for fast Atlas querying
+skillSchema.index({ category: 1, isActive: 1, displayOrder: 1 });
+skillSchema.index({ isActive: 1, showOnHome: 1, displayOrder: 1 });
+skillSchema.index({ isActive: 1, showInMarquee: 1, displayOrder: 1 });
+
 module.exports = mongoose.model('Skill', skillSchema);
+
