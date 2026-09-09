@@ -12,10 +12,11 @@ import {
   Home,
   Check,
   X,
-  Search
+  Search,
+  RefreshCw
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
-import { getMediaUrl } from '../../utils/mediaUtils';
+import { getMediaUrl, handleImageError } from '../../utils/mediaUtils';
 
 const AdminProjectsPage = () => {
   const [projects, setProjects] = useState([]);
@@ -23,6 +24,7 @@ const AdminProjectsPage = () => {
   const [updatingId, setUpdatingId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterTab, setFilterTab] = useState('all'); // 'all' | 'home' | 'active'
+  const [repairingMedia, setRepairingMedia] = useState(false);
 
   const fetchProjects = async () => {
     try {
@@ -34,6 +36,27 @@ const AdminProjectsPage = () => {
       showError(err, 'Unable to load projects.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRepairMedia = async () => {
+    const confirmed = await showConfirm({
+      title: 'Audit & Repair Project Media?',
+      text: 'This will inspect all project records, restore permanent production URLs for broken/ephemeral image paths, and clean obsolete files.',
+      confirmText: 'Run Repair',
+      isDestructive: false,
+    });
+    if (!confirmed) return;
+
+    setRepairingMedia(true);
+    try {
+      const res = await api.post('/admin/projects/repair-media');
+      toastSuccess(res.data?.message || 'Projects repaired successfully.');
+      fetchProjects();
+    } catch (err) {
+      showError(err, 'Media repair failed.');
+    } finally {
+      setRepairingMedia(false);
     }
   };
 
@@ -146,12 +169,24 @@ const AdminProjectsPage = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           {/* Home Showcase Counter */}
           <div className="px-3.5 py-2 rounded-xl bg-[#f0f6ff] border border-[#dce7fa] text-[#1683FF] text-xs font-semibold flex items-center gap-2">
             <Home className="w-3.5 h-3.5" />
             <span>Show on Home: <strong>{homeCount}/4</strong></span>
           </div>
+
+          {/* Audit & Repair Media button */}
+          <button
+            type="button"
+            onClick={handleRepairMedia}
+            disabled={repairingMedia}
+            title="Inspect project records and repair any broken or ephemeral image paths"
+            className="px-3.5 py-2 rounded-xl bg-[#f0f6ff] hover:bg-[#dce7fa] border border-[#dce7fa] text-[#1683FF] text-xs font-semibold flex items-center gap-1.5 transition-all disabled:opacity-50 cursor-pointer"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${repairingMedia ? 'animate-spin' : ''}`} />
+            <span>{repairingMedia ? 'Repairing...' : 'Fix Media'}</span>
+          </button>
 
           <Link
             to="/admin/projects/new"
@@ -228,6 +263,7 @@ const AdminProjectsPage = () => {
                   <img
                     src={getMediaUrl(project.thumbnail)}
                     alt={project.title}
+                    onError={handleImageError}
                     className="w-full h-full object-cover"
                   />
                   {project.showOnHome && (

@@ -4,13 +4,30 @@ const cloudinary = require('cloudinary').v2;
 const fs = require('fs');
 const path = require('path');
 
+// Check whether Cloudinary credentials are fully configured
+const isCloudinaryConfigured = () => {
+  if (process.env.CLOUDINARY_URL && process.env.CLOUDINARY_URL.trim()) return true;
+  return Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_CLOUD_NAME.trim() &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_KEY.trim() &&
+    process.env.CLOUDINARY_API_SECRET &&
+    process.env.CLOUDINARY_API_SECRET.trim()
+  );
+};
+
 // Configure Cloudinary if keys exist
-if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
+if (isCloudinaryConfigured()) {
+  if (process.env.CLOUDINARY_URL && process.env.CLOUDINARY_URL.trim()) {
+    cloudinary.config();
+  } else {
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME.trim(),
+      api_key: process.env.CLOUDINARY_API_KEY.trim(),
+      api_secret: process.env.CLOUDINARY_API_SECRET.trim(),
+    });
+  }
 }
 
 // Memory storage for file processing
@@ -43,7 +60,7 @@ const processAndUpload = async (fileOrBuffer, originalName, mimeType, folder = '
     fileBuffer = fileOrBuffer.buffer;
     name = fileOrBuffer.originalname || 'file';
     type = fileOrBuffer.mimetype || 'application/octet-stream';
-    targetFolder = originalName || 'jaseel_portfolio';
+    targetFolder = originalName || folder || 'jaseel_portfolio';
   } else {
     fileBuffer = fileOrBuffer;
     name = originalName || 'file';
@@ -51,20 +68,33 @@ const processAndUpload = async (fileOrBuffer, originalName, mimeType, folder = '
     targetFolder = folder || 'jaseel_portfolio';
   }
 
+  const hasCloudinary = isCloudinaryConfigured();
+
+  // In production, require persistent storage so images never get wiped
+  if (!hasCloudinary && process.env.NODE_ENV === 'production') {
+    throw new Error(
+      'Permanent cloud storage (Cloudinary) is not configured on the production server. ' +
+      'Please configure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET in your server environment variables.'
+    );
+  }
+
+  if (!hasCloudinary) {
+    console.warn('[WARN] CLOUDINARY credentials not configured. Saving to local /uploads directory. Note: Local files do not persist across container redeployments.');
+  }
+
   // 1. VIDEO HANDLING (MP4, WebM, MOV, etc.)
   if (type.startsWith('video/')) {
-    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+    if (hasCloudinary) {
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder: targetFolder,
             resource_type: 'video',
             chunk_size: 6000000,
-            quality: 'auto:best', // Preserves crystal-clear video quality without aggressive compression
-            // Do not force resizing or lossy transformations - preserves original 1080p/4K resolution
+            quality: 'auto:best', // Preserves crystal-clear video quality
           },
           (error, result) => {
-            if (error) return reject(error);
+            if (error) return reject(new Error(`Cloudinary video upload failed: ${error.message}`));
             resolve(result.secure_url);
           }
         );
@@ -83,12 +113,12 @@ const processAndUpload = async (fileOrBuffer, originalName, mimeType, folder = '
 
   // 2. PDF HANDLING
   if (type === 'application/pdf') {
-    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+    if (hasCloudinary) {
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: targetFolder, resource_type: 'raw' },
           (error, result) => {
-            if (error) return reject(error);
+            if (error) return reject(new Error(`Cloudinary PDF upload failed: ${error.message}`));
             resolve(result.secure_url);
           }
         );
@@ -106,12 +136,12 @@ const processAndUpload = async (fileOrBuffer, originalName, mimeType, folder = '
 
   // 3. SVG HANDLING (Preserve vector SVG content)
   if (type === 'image/svg+xml' || (typeof name === 'string' && name.toLowerCase().endsWith('.svg'))) {
-    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+    if (hasCloudinary) {
       return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           { folder: targetFolder, resource_type: 'raw', format: 'svg' },
           (error, result) => {
-            if (error) return reject(error);
+            if (error) return reject(new Error(`Cloudinary SVG upload failed: ${error.message}`));
             resolve(result.secure_url);
           }
         );
@@ -133,22 +163,22 @@ const processAndUpload = async (fileOrBuffer, originalName, mimeType, folder = '
     .webp({ quality: 85 })
     .toBuffer();
 
-  if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+  if (hasCloudinary) {
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         { folder: targetFolder, format: 'webp' },
         (error, result) => {
-          if (error) return reject(error);
+          if (error) return reject(new Error(`Cloudinary image upload failed: ${error.message}`));
           resolve(result.secure_url);
         }
       );
       uploadStream.end(optimizedBuffer);
     });
   } else {
-    // Fallback to local storage
+    // Fallback to local storage (only in non-production development)
     const uploadDir = path.join(__dirname, '..', 'uploads');
     if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    const filename = `${Date.now()}-${path.parse(name).name}.webp`;
+    const filename = `${Date.now()}-${path.parse(name).name.replace(/\s+/g, '_')}.webp`;
     const filePath = path.join(uploadDir, filename);
     fs.writeFileSync(filePath, optimizedBuffer);
     return `/uploads/${filename}`;
@@ -185,7 +215,7 @@ const deleteMediaFile = async (fileUrlOrPath) => {
     }
 
     // 2. Cloudinary Storage Deletion (https://res.cloudinary.com/...)
-    if (fileUrlOrPath.includes('cloudinary.com') && process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY) {
+    if (fileUrlOrPath.includes('cloudinary.com') && isCloudinaryConfigured()) {
       // Extract Cloudinary public_id and resource_type
       // e.g., https://res.cloudinary.com/demo/image/upload/v12345/jaseel_portfolio/profile/image.webp
       const matches = fileUrlOrPath.match(/(?:image|video|raw)\/upload\/(?:v\d+\/)?(.+?)(?:\.[a-zA-Z0-9]+)?$/);
@@ -209,5 +239,6 @@ const deleteMediaFile = async (fileUrlOrPath) => {
   }
 };
 
-module.exports = { upload, processAndUpload, deleteMediaFile };
+module.exports = { upload, processAndUpload, deleteMediaFile, isCloudinaryConfigured };
+
 

@@ -91,4 +91,102 @@ describe('Unit Testing: Backend Validation Utilities', () => {
       expect(mockRes.status).toHaveBeenCalledWith(400);
     });
   });
+
+  describe('Project Thumbnail & Media Validation', () => {
+    test('rejects temporary blob URLs as thumbnails', () => {
+      const mockReq = {
+        method: 'POST',
+        body: {
+          title: 'Demo Project',
+          slug: 'demo-proj',
+          category: 'Full Stack',
+          description: 'A test project',
+          thumbnail: 'blob:http://localhost:5173/78234-abcd',
+        },
+      };
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+      const mockNext = jest.fn();
+
+      validateProjectInput(mockReq, mockRes, mockNext);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, message: expect.stringContaining('blob URLs cannot be saved') })
+      );
+      expect(mockNext).not.toHaveBeenCalled();
+    });
+
+    test('rejects localhost URLs as thumbnails', () => {
+      const mockReq = {
+        method: 'POST',
+        body: {
+          title: 'Demo Project',
+          slug: 'demo-proj',
+          category: 'Full Stack',
+          description: 'A test project',
+          thumbnail: 'http://localhost:5000/uploads/temp.webp',
+        },
+      };
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+      const mockNext = jest.fn();
+
+      validateProjectInput(mockReq, mockRes, mockNext);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, message: expect.stringContaining('localhost URLs cannot be saved') })
+      );
+    });
+
+    test('rejects blob URLs in extra gallery images', () => {
+      const mockReq = {
+        method: 'POST',
+        body: {
+          title: 'Demo Project',
+          slug: 'demo-proj',
+          category: 'Full Stack',
+          description: 'A test project',
+          thumbnail: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
+          gallery: ['https://res.cloudinary.com/demo/image/upload/sample.jpg', 'blob:http://localhost:5173/extra'],
+        },
+      };
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+      const mockNext = jest.fn();
+
+      validateProjectInput(mockReq, mockRes, mockNext);
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith(
+        expect.objectContaining({ success: false, message: expect.stringContaining('temporary blob or localhost') })
+      );
+    });
+
+    test('accepts valid HTTPS Cloudinary/CDN URLs', () => {
+      const mockReq = {
+        method: 'POST',
+        body: {
+          title: 'Valid Project',
+          slug: 'valid-project',
+          category: 'Full Stack',
+          description: 'A test project description',
+          thumbnail: 'https://res.cloudinary.com/demo/image/upload/v12345/jaseel_portfolio/projects/demo.webp',
+          gallery: ['https://res.cloudinary.com/demo/image/upload/v12345/jaseel_portfolio/gallery/shot1.webp'],
+        },
+      };
+      const mockRes = {
+        status: jest.fn().mockReturnThis(),
+        json: jest.fn(),
+      };
+      const mockNext = jest.fn();
+
+      validateProjectInput(mockReq, mockRes, mockNext);
+      expect(mockNext).toHaveBeenCalled();
+    });
+  });
 });

@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
+    "test": "jest tests/unit",
     "seed": "node server/seed.js",
     "client": "npm --prefix client run dev",
     "build:client": "npm --prefix client run build"

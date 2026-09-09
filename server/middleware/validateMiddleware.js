@@ -145,7 +145,45 @@ const validateProjectInput = (req, res, next) => {
     if (!thumbnail || typeof thumbnail !== 'string' || !thumbnail.trim()) {
       return res.status(400).json({ success: false, message: 'Project thumbnail is required.' });
     }
-    req.body.thumbnail = thumbnail.trim();
+    const cleanThumb = thumbnail.trim();
+    if (cleanThumb.startsWith('blob:')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid thumbnail: browser-local blob URLs cannot be saved. Please upload the image file.',
+      });
+    }
+    if (cleanThumb.includes('localhost:') || cleanThumb.includes('127.0.0.1')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid thumbnail: localhost URLs cannot be saved as production assets.',
+      });
+    }
+    if (cleanThumb.startsWith('file://') || /^[A-Za-z]:\\/.test(cleanThumb)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid thumbnail: local filesystem paths cannot be saved.',
+      });
+    }
+    if (process.env.NODE_ENV === 'production' && (cleanThumb.startsWith('/uploads/') || cleanThumb.startsWith('uploads/'))) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid thumbnail: local server /uploads paths do not persist on ephemeral container deployments. Please upload via Cloudinary.',
+      });
+    }
+    req.body.thumbnail = cleanThumb;
+  }
+
+  if (req.body.gallery !== undefined && Array.isArray(req.body.gallery)) {
+    for (const item of req.body.gallery) {
+      if (typeof item !== 'string') continue;
+      const cleanItem = item.trim();
+      if (cleanItem.startsWith('blob:') || cleanItem.includes('localhost:') || cleanItem.includes('127.0.0.1')) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid gallery image: temporary blob or localhost URLs cannot be saved.',
+        });
+      }
+    }
   }
 
   if (githubUrl && typeof githubUrl === 'string' && githubUrl.trim() && !isValidUrl(githubUrl)) {

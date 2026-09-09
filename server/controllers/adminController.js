@@ -129,6 +129,11 @@ const updateProject = async (req, res) => {
       updateData.solutions = updateData.solutions.split('\n').map(s => s.trim()).filter(Boolean);
     }
 
+    // Clean old thumbnail if replaced
+    if (updateData.thumbnail && project.thumbnail && updateData.thumbnail !== project.thumbnail) {
+      deleteMediaFile(project.thumbnail).catch((err) => console.error('Error removing old thumbnail:', err));
+    }
+
     const updated = await Project.findByIdAndUpdate(id, updateData, { new: true, runValidators: true });
     invalidateCache('projects');
     res.status(200).json({ success: true, message: 'Project updated successfully', data: updated });
@@ -142,6 +147,17 @@ const deleteProject = async (req, res) => {
     const { id } = req.params;
     const deleted = await Project.findByIdAndDelete(id);
     if (!deleted) return res.status(404).json({ success: false, message: 'Project not found' });
+    
+    // Safely remove associated assets if stored on Cloudinary or local disk
+    if (deleted.thumbnail) {
+      deleteMediaFile(deleted.thumbnail).catch((err) => console.error('Error removing thumbnail on project delete:', err));
+    }
+    if (Array.isArray(deleted.gallery)) {
+      deleted.gallery.forEach((g) => {
+        if (g) deleteMediaFile(g).catch((err) => console.error('Error removing gallery asset:', err));
+      });
+    }
+
     invalidateCache('projects');
     res.status(200).json({ success: true, message: 'Project deleted successfully' });
   } catch (error) {
@@ -517,7 +533,8 @@ const uploadMedia = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({ success: false, message: 'No file uploaded' });
     }
-    const fileUrl = await processAndUpload(req.file);
+    const folder = req.body.folder || 'jaseel_portfolio/projects';
+    const fileUrl = await processAndUpload(req.file, folder);
     res.status(200).json({
       success: true,
       message: 'File uploaded successfully',
@@ -666,6 +683,85 @@ const deleteMessage = async (req, res) => {
   }
 };
 
+/**
+ * Diagnostic & repair endpoint for existing project media
+ * Replaces broken ephemeral /uploads/ or invalid paths with permanent high-res showcase URLs
+ */
+const repairProjectMedia = async (req, res) => {
+  try {
+    const projects = await Project.find();
+    let repairedCount = 0;
+    const repairedProjects = [];
+
+    const defaultProjectImages = {
+      'dynavue': 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=1200&q=80',
+      'vault-co': 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
+      'km-store': 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=1200&q=80',
+      'focus-flow': 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=1200&q=80',
+      'personal-portfolio': 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80',
+    };
+
+    const fallbackDefault = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80';
+
+    for (const proj of projects) {
+      let changed = false;
+      const slugKey = (proj.slug || '').toLowerCase().trim();
+
+      // Check thumbnail
+      const thumb = (proj.thumbnail || '').trim();
+      const isBrokenOrLocal = 
+        !thumb || 
+        thumb.startsWith('/uploads/') || 
+        thumb.startsWith('uploads/') || 
+        thumb.startsWith('blob:') || 
+        thumb.includes('localhost:') || 
+        thumb.includes('127.0.0.1');
+
+      if (isBrokenOrLocal) {
+        proj.thumbnail = defaultProjectImages[slugKey] || fallbackDefault;
+        changed = true;
+      }
+
+      // Check gallery
+      if (Array.isArray(proj.gallery)) {
+        const cleanedGallery = proj.gallery
+          .filter(g => g && typeof g === 'string' && !g.startsWith('blob:') && !g.includes('localhost:') && !g.includes('127.0.0.1'))
+          .map(g => {
+            if (g.startsWith('/uploads/') || g.startsWith('uploads/')) {
+              return null; // clean broken ephemeral entries
+            }
+            return g;
+          })
+          .filter(Boolean);
+
+        if (cleanedGallery.length !== proj.gallery.length) {
+          proj.gallery = cleanedGallery;
+          changed = true;
+        }
+      }
+
+      if (changed) {
+        await proj.save();
+        repairedCount++;
+        repairedProjects.push({ title: proj.title, slug: proj.slug, newThumbnail: proj.thumbnail });
+      }
+    }
+
+    if (repairedCount > 0) {
+      invalidateCache('projects');
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Audited ${projects.length} project(s); repaired ${repairedCount} project(s) with permanent media URLs.`,
+      repairedCount,
+      repairedProjects,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   updateProfile,
   getAdminProjects,
@@ -673,6 +769,7 @@ module.exports = {
   createProject,
   updateProject,
   deleteProject,
+  repairProjectMedia,
   getAdminSkillCategories,
   createSkillCategory,
   updateSkillCategory,

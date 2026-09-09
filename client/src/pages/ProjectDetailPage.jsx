@@ -11,7 +11,7 @@ import {
   Loader2 
 } from 'lucide-react';
 import { Github } from '../components/SocialIcons';
-import { getMediaUrl } from '../utils/mediaUtils';
+import { getMediaUrl, handleImageError } from '../utils/mediaUtils';
 
 const ProjectDetailPage = () => {
   const { slug } = useParams();
@@ -145,6 +145,7 @@ const ProjectDetailPage = () => {
             <img
               src={getMediaUrl(project.thumbnail)}
               alt={project.title}
+              onError={handleImageError}
               fetchPriority="high"
               loading="eager"
               decoding="async"
@@ -240,6 +241,7 @@ const ProjectDetailPage = () => {
                         <img
                           src={getMediaUrl(imgUrl)}
                           alt={`${project.title} artifact ${gIdx + 1}`}
+                          onError={handleImageError}
                           decoding="async"
                           className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
                           loading="lazy"

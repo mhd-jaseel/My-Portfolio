@@ -9,6 +9,9 @@
  * 4. Falsy/undefined values -> Returns safe fallback or empty string.
  */
 
+// Default high-quality fallback project image
+export const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80';
+
 // Extract backend origin from VITE_API_URL (e.g. "https://my-portfolio-api-ajt6.onrender.com")
 export const getBackendOrigin = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -21,7 +24,10 @@ export const getBackendOrigin = () => {
   return clean.replace(/\/api$/, '');
 };
 
-export const getMediaUrl = (url, fallback = '') => {
+/**
+ * Safely resolves media URLs (Cloudinary HTTPS, Unsplash, local backend uploads, or static assets)
+ */
+export const getMediaUrl = (url, fallback = DEFAULT_FALLBACK_IMAGE) => {
   if (!url || typeof url !== 'string') {
     return fallback;
   }
@@ -55,4 +61,15 @@ export const getMediaUrl = (url, fallback = '') => {
   return trimmed;
 };
 
+/**
+ * Reusable image onError event handler to prevent broken image icons and layout breakage
+ */
+export const handleImageError = (e, fallback = DEFAULT_FALLBACK_IMAGE) => {
+  if (e?.currentTarget && e.currentTarget.src !== fallback) {
+    e.currentTarget.onerror = null; // prevent looping if fallback also fails
+    e.currentTarget.src = fallback;
+  }
+};
+
 export default getMediaUrl;
+

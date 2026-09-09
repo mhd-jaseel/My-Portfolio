@@ -13,7 +13,7 @@ import {
   Code2
 } from 'lucide-react';
 import { showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
-import { getMediaUrl } from '../../utils/mediaUtils';
+import { getMediaUrl, handleImageError } from '../../utils/mediaUtils';
 
 const AdminProjectFormPage = () => {
   const { id } = useParams();
@@ -92,7 +92,7 @@ const AdminProjectFormPage = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toastError('Please upload an image file.');
+      toastError('Please upload a valid image file (PNG, JPG, WEBP, or SVG).');
       return;
     }
 
@@ -108,12 +108,15 @@ const AdminProjectFormPage = () => {
       });
       if (res.data?.url) {
         setFormData((prev) => ({ ...prev, thumbnail: res.data.url }));
-        toastSuccess('Thumbnail uploaded successfully.');
+        toastSuccess('Thumbnail uploaded successfully to permanent cloud storage.');
+      } else {
+        throw new Error('Server did not return an image URL');
       }
     } catch (err) {
-      showError(err, 'Thumbnail upload failed. Please try again.');
+      showError(err, 'Thumbnail upload failed. Please verify storage configuration and try again.');
     } finally {
       setUploadingThumbnail(false);
+      e.target.value = '';
     }
   };
 
@@ -122,7 +125,7 @@ const AdminProjectFormPage = () => {
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      toastError('Please upload an image file.');
+      toastError('Please upload a valid image file (PNG, JPG, WEBP, or SVG).');
       return;
     }
 
@@ -141,12 +144,15 @@ const AdminProjectFormPage = () => {
           ...prev,
           gallery: [...(prev.gallery || []), res.data.url],
         }));
-        toastSuccess('Gallery image added successfully.');
+        toastSuccess('Gallery image uploaded successfully.');
+      } else {
+        throw new Error('Server did not return an image URL');
       }
     } catch (err) {
-      showError(err, 'Image upload failed. Please try again.');
+      showError(err, 'Gallery image upload failed. Please try again.');
     } finally {
       setUploadingGallery(false);
+      e.target.value = '';
     }
   };
 
@@ -161,6 +167,11 @@ const AdminProjectFormPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (uploadingThumbnail || uploadingGallery) {
+      showError('Please wait for image upload to complete before saving.');
+      return;
+    }
+
     if (!formData.title.trim()) {
       showError('Project name is required.');
       return;
@@ -174,9 +185,20 @@ const AdminProjectFormPage = () => {
       return;
     }
     if (!formData.thumbnail.trim()) {
-      showError('Please upload a project image.');
+      showError('Please upload a project thumbnail image.');
       return;
     }
+
+    const cleanThumbnail = formData.thumbnail.trim();
+    if (cleanThumbnail.startsWith('blob:')) {
+      showError('Temporary browser blob URLs cannot be saved. Please click "Upload Image" to upload the image file permanently.');
+      return;
+    }
+    if (cleanThumbnail.includes('localhost:') || cleanThumbnail.includes('127.0.0.1')) {
+      showError('Localhost URLs cannot be saved in production projects. Please provide a permanent HTTPS URL or upload the file.');
+      return;
+    }
+
     if (!formData.description.trim()) {
       showError('Description is required.');
       return;
@@ -194,7 +216,7 @@ const AdminProjectFormPage = () => {
       }
       navigate('/admin/projects');
     } catch (err) {
-      showError(err, 'Unable to save changes. Please try again.');
+      showError(err, 'Unable to save project. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -384,7 +406,12 @@ const AdminProjectFormPage = () => {
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
               <div className="w-28 h-20 rounded-xl overflow-hidden bg-[#f8fbff] border border-[#dce7fa] shrink-0">
                 {formData.thumbnail ? (
-                  <img src={getMediaUrl(formData.thumbnail)} alt="Thumbnail preview" className="w-full h-full object-cover" />
+                  <img
+                    src={getMediaUrl(formData.thumbnail)}
+                    alt="Thumbnail preview"
+                    className="w-full h-full object-cover"
+                    onError={handleImageError}
+                  />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8a99ad]">No Image</div>
                 )}
@@ -434,7 +461,12 @@ const AdminProjectFormPage = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {formData.gallery?.map((imgUrl, idx) => (
                 <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-[#dce7fa] group bg-[#f8fbff]">
-                  <img src={getMediaUrl(imgUrl)} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                  <img
+                    src={getMediaUrl(imgUrl)}
+                    alt={`Gallery ${idx}`}
+                    className="w-full h-full object-cover"
+                    onError={handleImageError}
+                  />
                   <button
                     type="button"
                     onClick={() => removeGalleryImage(idx)}
@@ -545,13 +577,18 @@ const AdminProjectFormPage = () => {
           </Link>
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || uploadingThumbnail || uploadingGallery}
             className="px-6 py-2.5 rounded-xl bg-[#1683FF] hover:bg-[#1371dc] text-white font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2 shadow-sm disabled:opacity-50"
           >
             {saving ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
                 <span>Saving...</span>
+              </>
+            ) : (uploadingThumbnail || uploadingGallery) ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Uploading Media...</span>
               </>
             ) : (
               <>

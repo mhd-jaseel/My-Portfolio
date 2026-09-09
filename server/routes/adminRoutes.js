@@ -15,6 +15,7 @@ const {
   createProject,
   updateProject,
   deleteProject,
+  repairProjectMedia,
   getAdminSkillCategories,
   createSkillCategory,
   updateSkillCategory,
@@ -63,6 +64,7 @@ router.put('/profile', protectAdmin, updateProfile);
 
 // PROJECTS
 router.get('/projects', protectAdmin, getAdminProjects);
+router.post('/projects/repair-media', protectAdmin, repairProjectMedia);
 router.get('/projects/:id', protectAdmin, validateObjectId('id'), getAdminProjectById);
 router.post('/projects', protectAdmin, validateProjectInput, createProject);
 router.put('/projects/:id', protectAdmin, validateObjectId('id'), validateProjectInput, updateProject);

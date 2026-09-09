@@ -6,7 +6,7 @@ import api from '../services/api';
 import { ArrowRight, Sparkles, Loader2, RefreshCw, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { getMediaUrl } from '../utils/mediaUtils';
+import { getMediaUrl, handleImageError } from '../utils/mediaUtils';
 
 // In-memory cache to prevent refetching when navigating back and forth
 let cachedProjects = null;
@@ -145,6 +145,7 @@ const ProjectsPage = () => {
                         <img
                           src={getMediaUrl(project.thumbnail)}
                           alt={project.title}
+                          onError={handleImageError}
                           loading="lazy"
                           decoding="async"
                           width="600"
