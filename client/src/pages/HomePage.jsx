@@ -28,7 +28,7 @@ const defaultProfile = {
   },
   meetMeVideo: {
     showOnHome: true,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=75',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=max&w=1200&q=85',
     videoUrl: ''
   }
 };
@@ -39,7 +39,7 @@ const defaultProjects = [
     title: 'DynaVue',
     slug: 'dynavue',
     category: 'Full Stack Portfolio & Booking Platform',
-    thumbnail: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=720&q=75',
+    thumbnail: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=max&w=1400&q=85',
     technologies: ['React', 'Vite', 'Node.js', 'Express.js', 'MongoDB', 'Socket.io', 'Cloudinary']
   },
   {
@@ -47,7 +47,7 @@ const defaultProjects = [
     title: 'VAULT.CO',
     slug: 'vault-co',
     category: 'Production E-Commerce Platform',
-    thumbnail: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=720&q=75',
+    thumbnail: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=max&w=1400&q=85',
     technologies: ['React', 'Tailwind CSS', 'Node.js', 'Express.js', 'MongoDB', 'Razorpay']
   },
   {
@@ -55,7 +55,7 @@ const defaultProjects = [
     title: 'Focus Flow',
     slug: 'focus-flow',
     category: 'Smart Productivity & Task Manager',
-    thumbnail: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=720&q=75',
+    thumbnail: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=max&w=1400&q=85',
     technologies: ['React', 'Redux Toolkit', 'Node.js', 'Express.js', 'MongoDB']
   },
   {
@@ -63,7 +63,7 @@ const defaultProjects = [
     title: 'KM Store',
     slug: 'km-store',
     category: 'Full-Stack Electronics E-Commerce',
-    thumbnail: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=720&q=75',
+    thumbnail: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=max&w=1400&q=85',
     technologies: ['React', 'Node.js', 'Express.js', 'MongoDB', 'Razorpay', 'Tailwind CSS']
   }
 ];

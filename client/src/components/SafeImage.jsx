@@ -1,23 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ImageIcon } from 'lucide-react';
-import { getOptimizedMediaUrl, isImageLoaded, markImageLoaded } from '../utils/mediaUtils';
+import { getOptimizedMediaUrl, getImageSrcSet, isImageLoaded, markImageLoaded } from '../utils/mediaUtils';
 
 /**
  * Reusable SafeImage component with:
  * 1. Zero layout shift (preserves dimensions and aspect ratio).
- * 2. Session-persisted load state: immediately displays cached images with ZERO skeleton flicker when navigating routes.
- * 3. Dynamic payload optimization: formats as WebP/AVIF via Cloudinary/Unsplash with dimension caps.
- * 4. Graceful HTML/CSS fallback placeholder if URL fails or is missing.
- * 5. Zero broken image icon or console errors.
- * 6. Complete absence of any legacy AI placeholder assets.
+ * 2. Complete, uncropped artwork visibility via object-contain and responsive containers.
+ * 3. High-DPI sharpness on mobile and desktop via responsive srcSet and 1600px max bounds.
+ * 4. Session-persisted load state: immediately displays cached images with ZERO skeleton flicker when navigating routes.
+ * 5. Graceful HTML/CSS fallback placeholder if URL fails or is missing.
+ * 6. Zero broken image icon or console errors.
  */
 const SafeImage = ({
   src,
   alt = 'Image',
   className = '',
   containerClassName = '',
-  aspectRatio = '16/9',
-  width,
+  aspectRatio = 'auto',
+  width = 1600,
   height,
   loading = 'lazy',
   fetchPriority = 'auto',
@@ -25,11 +25,16 @@ const SafeImage = ({
   fallbackLabel = 'Image unavailable',
   iconSize = 'w-6 h-6',
   rounded = 'rounded-xl',
-  objectFit = 'object-cover',
+  objectFit = 'object-contain',
+  srcSet,
+  sizes,
   style = {},
   onClick,
 }) => {
-  const optimizedSrc = getOptimizedMediaUrl(src, { width: width || 800 });
+  const targetWidth = width || 1600;
+  const optimizedSrc = getOptimizedMediaUrl(src, { width: targetWidth, quality: 85 });
+  const calculatedSrcSet = srcSet || getImageSrcSet(src, { quality: 85 });
+  const calculatedSizes = sizes || (calculatedSrcSet ? '(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 800px' : undefined);
   const imgRef = useRef(null);
 
   // Check if image was previously loaded anywhere in this browser session
@@ -39,7 +44,7 @@ const SafeImage = ({
 
   // Synchronize state when src or width changes
   useEffect(() => {
-    const url = getOptimizedMediaUrl(src, { width: width || 800 });
+    const url = getOptimizedMediaUrl(src, { width: targetWidth, quality: 85 });
     if (!url) {
       setHasError(true);
       setIsLoaded(false);
@@ -51,7 +56,7 @@ const SafeImage = ({
         setIsLoaded(false);
       }
     }
-  }, [src, width]);
+  }, [src, targetWidth]);
 
   // If the browser already has the image cached in memory, complete is true on mount
   useEffect(() => {
@@ -74,13 +79,15 @@ const SafeImage = ({
     setHasError(true);
   };
 
+  const effectiveAspectRatio = aspectRatio && aspectRatio !== 'auto' ? aspectRatio : undefined;
+
   // Fallback Placeholder UI (Pure HTML/CSS)
   if (hasError || !optimizedSrc) {
     return (
       <div
         className={`relative w-full overflow-hidden bg-[#f4f8ff] border border-[#dce7fa] flex flex-col items-center justify-center p-4 text-center select-none ${rounded} ${containerClassName}`}
         style={{
-          aspectRatio: aspectRatio || undefined,
+          aspectRatio: effectiveAspectRatio,
           width: width ? `${width}px` : undefined,
           height: height ? `${height}px` : undefined,
           ...style,
@@ -100,20 +107,22 @@ const SafeImage = ({
     );
   }
 
+  // Determine height classes without conflicting with custom className
+  const hasHeightClass = className.includes('h-');
+  const imgDimensionClasses = hasHeightClass ? 'w-full' : 'w-full h-full';
+
   return (
     <div
       className={`relative w-full overflow-hidden ${rounded} ${containerClassName}`}
       style={{
-        aspectRatio: aspectRatio || undefined,
-        width: width ? `${width}px` : undefined,
-        height: height ? `${height}px` : undefined,
+        aspectRatio: effectiveAspectRatio,
         ...style,
       }}
       onClick={onClick}
     >
       {/* Shimmer loading skeleton underneath image (rendered only when image is genuinely not loaded) */}
       {!isLoaded && (
-        <div className="absolute inset-0 bg-gradient-to-r from-[#edf3fc] via-[#f7faff] to-[#edf3fc] animate-pulse flex items-center justify-center">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#edf3fc] via-[#f7faff] to-[#edf3fc] animate-pulse flex items-center justify-center pointer-events-none min-h-[220px]">
           <div className="w-8 h-8 rounded-lg bg-white/60 border border-[#1683FF]/15 flex items-center justify-center text-[#1683FF]/40">
             <ImageIcon className="w-4 h-4 animate-pulse" />
           </div>
@@ -124,6 +133,8 @@ const SafeImage = ({
       <img
         ref={imgRef}
         src={optimizedSrc}
+        srcSet={calculatedSrcSet}
+        sizes={calculatedSizes}
         alt={alt}
         width={width}
         height={height}
@@ -132,7 +143,7 @@ const SafeImage = ({
         decoding={decoding}
         onLoad={handleLoad}
         onError={handleError}
-        className={`w-full h-full ${objectFit} ${
+        className={`${imgDimensionClasses} ${objectFit} ${
           isAlreadyLoaded ? '' : 'transition-opacity duration-300'
         } ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
       />

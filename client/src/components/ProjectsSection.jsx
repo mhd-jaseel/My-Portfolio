@@ -39,18 +39,22 @@ const ProjectsSection = ({ projects = [] }) => {
             {/* Project Image Card */}
             <Link
               to={`/projects/${project.slug}`}
-              className="block relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#dce7fa] shadow-sm aspect-[16/9] group-hover:shadow-lg transition-all duration-300"
+              className="block relative rounded-2xl sm:rounded-3xl overflow-hidden bg-[#f4f7fc] border border-[#dce7fa] shadow-sm group-hover:shadow-lg transition-all duration-300"
             >
-              <SafeImage
-                src={project.thumbnail}
-                alt={project.title}
-                aspectRatio="16/9"
-                width={600}
-                height={338}
-                rounded="rounded-2xl sm:rounded-3xl"
-                className="group-hover:scale-103 transition-transform duration-500 ease-out"
-                fallbackLabel={project.title || 'Project Preview'}
-              />
+              <div className="w-full flex items-center justify-center bg-[#f8fbff] aspect-auto sm:aspect-[16/9]">
+                <SafeImage
+                  src={project.thumbnail}
+                  alt={project.title}
+                  aspectRatio="auto"
+                  objectFit="object-contain"
+                  width={1600}
+                  height={900}
+                  rounded="rounded-2xl sm:rounded-3xl"
+                  containerClassName="w-full h-full flex items-center justify-center bg-[#f8fbff]"
+                  className="w-full h-auto sm:h-full max-h-[520px] object-contain group-hover:scale-[1.02] transition-transform duration-500 ease-out"
+                  fallbackLabel={project.title || 'Project Preview'}
+                />
+              </div>
             </Link>
 
             {/* Title (Category) + Link Arrow */}

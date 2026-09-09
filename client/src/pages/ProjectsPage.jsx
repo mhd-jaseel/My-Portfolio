@@ -152,20 +152,24 @@ const ProjectsPage = () => {
                     >
                       <Link
                         to={`/projects/${project.slug}`}
-                        className="block relative rounded-3xl overflow-hidden bg-white border border-[#D6E3FC] shadow-lg shadow-[#A2B1FF]/10 aspect-[16/10] group-hover:shadow-xl transition-all duration-300"
+                        className="block relative rounded-3xl overflow-hidden bg-[#f4f7fc] border border-[#D6E3FC] shadow-lg shadow-[#A2B1FF]/10 group-hover:shadow-xl transition-all duration-300"
                       >
-                        <SafeImage
-                          src={project.thumbnail}
-                          alt={project.title}
-                          aspectRatio="16/10"
-                          width={600}
-                          height={375}
-                          rounded="rounded-3xl"
-                          className="group-hover:scale-105 transition-transform duration-500 ease-out"
-                          fallbackLabel={project.title || 'Project Preview'}
-                        />
+                        <div className="w-full flex items-center justify-center bg-[#f8fbff] aspect-auto sm:aspect-[16/10]">
+                          <SafeImage
+                            src={project.thumbnail}
+                            alt={project.title}
+                            aspectRatio="auto"
+                            objectFit="object-contain"
+                            width={1600}
+                            height={1000}
+                            rounded="rounded-3xl"
+                            containerClassName="w-full h-full flex items-center justify-center bg-[#f8fbff]"
+                            className="w-full h-auto sm:h-full max-h-[520px] object-contain group-hover:scale-[1.02] transition-transform duration-500 ease-out"
+                            fallbackLabel={project.title || 'Project Preview'}
+                          />
+                        </div>
                         {isVaultCo && (
-                          <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-md px-3.5 py-1 rounded-full text-[10px] font-mono font-bold text-[#1683FF] border border-[#1683FF]/40 shadow-sm flex items-center gap-1">
+                          <div className="absolute top-3.5 left-3.5 bg-white/95 backdrop-blur-md px-3 py-1 rounded-full text-[10px] font-mono font-bold text-[#1683FF] border border-[#1683FF]/40 shadow-sm flex items-center gap-1 z-10 pointer-events-none">
                             <Sparkles className="w-3 h-3" />
                             <span>FLAGSHIP PLATFORM</span>
                           </div>

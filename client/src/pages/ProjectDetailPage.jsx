@@ -141,18 +141,23 @@ const ProjectDetailPage = () => {
           </div>
 
           {/* Hero Image */}
-          <div className="rounded-3xl overflow-hidden border border-[#C8D6FF]/80 shadow-xl mb-14 aspect-[16/9] bg-white">
-            <SafeImage
-              src={project.thumbnail}
-              alt={project.title}
-              aspectRatio="16/9"
-              width={1200}
-              height={675}
-              rounded="rounded-3xl"
-              fetchPriority="high"
-              loading="eager"
-              fallbackLabel={project.title || 'Project Preview'}
-            />
+          <div className="rounded-3xl overflow-hidden border border-[#C8D6FF]/80 shadow-xl mb-14 bg-[#f8fbff]">
+            <div className="w-full flex items-center justify-center aspect-auto sm:aspect-[16/9]">
+              <SafeImage
+                src={project.thumbnail}
+                alt={project.title}
+                aspectRatio="auto"
+                objectFit="object-contain"
+                width={1600}
+                height={900}
+                rounded="rounded-3xl"
+                containerClassName="w-full h-full flex items-center justify-center bg-[#f8fbff]"
+                className="w-full h-auto sm:h-full max-h-[650px] object-contain"
+                fetchPriority="high"
+                loading="eager"
+                fallbackLabel={project.title || 'Project Preview'}
+              />
+            </div>
           </div>
 
           {/* 2-Column Details Grid */}
@@ -237,16 +242,22 @@ const ProjectDetailPage = () => {
                   </h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {project.gallery.map((imgUrl, gIdx) => (
-                      <div key={gIdx} className="rounded-2xl overflow-hidden border border-[#dce7fa] aspect-video bg-white shadow-md">
-                        <SafeImage
-                          src={imgUrl}
-                          alt={`${project.title} artifact ${gIdx + 1}`}
-                          aspectRatio="16/9"
-                          rounded="rounded-2xl"
-                          className="hover:scale-105 transition-transform duration-500"
-                          loading="lazy"
-                          fallbackLabel={`Artifact ${gIdx + 1}`}
-                        />
+                      <div key={gIdx} className="rounded-2xl overflow-hidden border border-[#dce7fa] bg-[#f8fbff] shadow-md">
+                        <div className="w-full flex items-center justify-center aspect-auto sm:aspect-video">
+                          <SafeImage
+                            src={imgUrl}
+                            alt={`${project.title} artifact ${gIdx + 1}`}
+                            aspectRatio="auto"
+                            objectFit="object-contain"
+                            width={1600}
+                            height={900}
+                            rounded="rounded-2xl"
+                            containerClassName="w-full h-full flex items-center justify-center bg-[#f8fbff]"
+                            className="w-full h-auto sm:h-full max-h-[450px] object-contain hover:scale-102 transition-transform duration-500"
+                            loading="lazy"
+                            fallbackLabel={`Artifact ${gIdx + 1}`}
+                          />
+                        </div>
                       </div>
                     ))}
                   </div>

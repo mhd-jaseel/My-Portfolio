@@ -81,18 +81,19 @@ export const getMediaUrl = (url, fallback = '') => {
 };
 
 /**
- * Optimizes image URLs for faster delivery, smaller payload, and modern formats (WebP/AVIF).
+ * Optimizes image URLs for faster delivery, smaller payload, modern formats (WebP/AVIF),
+ * and high-DPI sharpness (2x / 3x Retina displays).
  * - Cloudinary: Injects automated format selection (f_auto), intelligent compression (q_auto:good),
- *   and dimension limit (w_${width},c_limit) so huge multi-megabyte admin uploads are scaled down
- *   to the actual container size.
- * - Unsplash: Applies query parameters (w, q, auto=format, fit=crop).
+ *   and dimension limit (w_${width},c_limit) WITHOUT cropping or distorting the artwork.
+ * - Unsplash: Applies parameters (w, q, auto=format, fit=max) to strictly PRESERVE the entire
+ *   aspect ratio and NEVER crop poster artwork.
  * - Leaves local uploads and static SVGs intact.
  */
 export const getOptimizedMediaUrl = (url, options = {}) => {
   const resolved = getMediaUrl(url, '');
   if (!resolved || typeof resolved !== 'string') return '';
 
-  const { width = 800, quality = 75 } = options;
+  const { width = 1600, quality = 85 } = options;
 
   // 1. Cloudinary Optimization (Dynamic delivery)
   if (resolved.includes('cloudinary.com') && resolved.includes('/image/upload/')) {
@@ -100,18 +101,18 @@ export const getOptimizedMediaUrl = (url, options = {}) => {
     if (resolved.match(/\/image\/upload\/[a-z]_[a-z0-9_,]+\//)) {
       return resolved;
     }
-    const transform = `f_auto,q_auto,w_${width},c_limit`;
+    const transform = `f_auto,q_auto:good,w_${width},c_limit`;
     return resolved.replace('/image/upload/', `/image/upload/${transform}/`);
   }
 
-  // 2. Unsplash Optimization (Query params)
+  // 2. Unsplash Optimization (Query params with fit=max so entire poster is NEVER cropped)
   if (resolved.includes('images.unsplash.com')) {
     try {
       const urlObj = new URL(resolved);
       urlObj.searchParams.set('w', width.toString());
       urlObj.searchParams.set('q', quality.toString());
       urlObj.searchParams.set('auto', 'format');
-      urlObj.searchParams.set('fit', 'crop');
+      urlObj.searchParams.set('fit', 'max');
       return urlObj.toString();
     } catch {
       return resolved;
@@ -119,6 +120,28 @@ export const getOptimizedMediaUrl = (url, options = {}) => {
   }
 
   return resolved;
+};
+
+/**
+ * Generates responsive high-DPI srcset (640w, 1024w, 1600w) for crisp rendering
+ * on both mobile 2x/3x Retina viewports and high-res desktop monitors.
+ */
+export const getImageSrcSet = (url, options = {}) => {
+  const resolved = getMediaUrl(url, '');
+  if (!resolved || typeof resolved !== 'string') return undefined;
+
+  if (
+    resolved.includes('images.unsplash.com') ||
+    (resolved.includes('cloudinary.com') && resolved.includes('/image/upload/'))
+  ) {
+    const q = options.quality || 85;
+    const s640 = getOptimizedMediaUrl(resolved, { width: 640, quality: q });
+    const s1024 = getOptimizedMediaUrl(resolved, { width: 1024, quality: q });
+    const s1600 = getOptimizedMediaUrl(resolved, { width: 1600, quality: q });
+    return `${s640} 640w, ${s1024} 1024w, ${s1600} 1600w`;
+  }
+
+  return undefined;
 };
 
 /**
