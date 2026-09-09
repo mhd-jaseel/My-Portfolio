@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess } from '../../utils/alertUtils';
 import { getMediaUrl } from '../../utils/mediaUtils';
+import SafeImage from '../../components/SafeImage';
 
 const AdminMediaPage = () => {
   const [file, setFile] = useState(null);
@@ -334,14 +335,13 @@ const AdminMediaPage = () => {
                   {/* Top Preview Canvas */}
                   <div className="w-full h-40 rounded-xl bg-[#f8fbff] border border-[#e8f2ff] overflow-hidden flex items-center justify-center relative group">
                     {item.type === 'image' || item.type === 'svg' ? (
-                      <img
-                        src={getMediaUrl(item.url)}
+                      <SafeImage
+                        src={item.url}
                         alt={item.filename}
+                        aspectRatio="16/10"
+                        rounded="rounded-xl"
+                        fallbackLabel="Preview Unavailable"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        onError={(e) => {
-                          e.target.onerror = null;
-                          e.target.src = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=400&q=80';
-                        }}
                       />
                     ) : item.type === 'video' ? (
                       <div className="w-full h-full bg-black relative flex items-center justify-center">

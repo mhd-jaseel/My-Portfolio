@@ -562,8 +562,8 @@ const deleteAdminMedia = async (req, res) => {
     if (profile) {
       let modified = false;
       if (profile.profileImage === cleanUrl) {
-        profile.profileImage = 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80';
-        cleanedSections.push('Profile Photo reset to default');
+        profile.profileImage = '';
+        cleanedSections.push('Profile Photo cleared');
         modified = true;
       }
       if (profile.resume === cleanUrl) {

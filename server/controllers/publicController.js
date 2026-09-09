@@ -12,6 +12,10 @@ const getPublicProfile = async (req, res) => {
     if (!profile) {
       profile = await Profile.create({});
     }
+    // Block and sanitize any legacy development placeholder image
+    if (profile.profileImage && (profile.profileImage.includes('developer_hero') || profile.profileImage.includes('hero.png'))) {
+      profile.profileImage = '';
+    }
     res.status(200).json({ success: true, data: profile });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

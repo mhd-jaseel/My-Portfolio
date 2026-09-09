@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Code, FileCode2, Layout, Palette, Atom, Zap, Compass, Wind, Box, Sparkles,
   Layers, Radio, Smartphone, Server, Cpu, Globe, Grid, Sliders, Key, Webhook,
@@ -27,30 +27,33 @@ const lucideIconMap = {
  * 4. Safe default code fallback
  */
 const SkillIcon = ({ icon, name = '', className = 'w-4 h-4', imgClassName = 'w-full h-full object-contain' }) => {
+  const [imgError, setImgError] = useState(false);
   const iconStr = (icon || '').trim();
   const nameLower = (name || '').toLowerCase();
 
   // 1. Uploaded Image / SVG URL
   if (
-    iconStr.startsWith('http://') || 
-    iconStr.startsWith('https://') || 
-    iconStr.startsWith('/uploads') || 
-    iconStr.startsWith('uploads/') || 
-    iconStr.startsWith('data:image') ||
-    iconStr.includes('/')
+    !imgError &&
+    (iconStr.startsWith('http://') || 
+     iconStr.startsWith('https://') || 
+     iconStr.startsWith('/uploads') || 
+     iconStr.startsWith('uploads/') || 
+     iconStr.startsWith('data:image') ||
+     iconStr.includes('/'))
   ) {
-    return (
-      <img
-        src={getMediaUrl(iconStr)}
-        alt={name || 'Skill icon'}
-        className={`${imgClassName} shrink-0`}
-        loading="lazy"
-        onError={(e) => {
-          // If image fails to load, fallback gracefully
-          e.currentTarget.style.display = 'none';
-        }}
-      />
-    );
+    const resolvedUrl = getMediaUrl(iconStr, '');
+    if (resolvedUrl) {
+      return (
+        <img
+          src={resolvedUrl}
+          alt={name || 'Skill icon'}
+          className={`${imgClassName} shrink-0`}
+          loading="lazy"
+          decoding="async"
+          onError={() => setImgError(true)}
+        />
+      );
+    }
   }
 
   // 2. Exact Lucide Icon Match

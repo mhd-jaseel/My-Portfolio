@@ -44,13 +44,21 @@ const PinkTechStrip = () => {
 
     // If it's an uploaded image URL (starts with http or / or uploads/)
     if (iconStr.startsWith('http://') || iconStr.startsWith('https://') || iconStr.startsWith('/') || iconStr.startsWith('uploads/')) {
-      return (
-        <img
-          src={getMediaUrl(iconStr)}
-          alt={tool.name}
-          className="w-4 h-4 object-contain brightness-0 invert inline-block shrink-0"
-        />
-      );
+      const resolved = getMediaUrl(iconStr, '');
+      if (resolved) {
+        return (
+          <img
+            src={resolved}
+            alt={tool.name}
+            loading="lazy"
+            decoding="async"
+            width="16"
+            height="16"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+            className="w-4 h-4 object-contain brightness-0 invert inline-block shrink-0"
+          />
+        );
+      }
     }
 
     if (nameLower.includes('figma') || iconStr.toLowerCase() === 'figma') {

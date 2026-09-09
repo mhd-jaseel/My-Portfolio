@@ -21,7 +21,7 @@ const profileSchema = new mongoose.Schema({
   },
   profileImage: {
     type: String,
-    default: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=800&q=80',
+    default: '',
   },
   location: {
     type: String,

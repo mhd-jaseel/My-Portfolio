@@ -5,12 +5,11 @@
  * Handles:
  * 1. Absolute URLs (Cloudinary, Unsplash, HTTPS external URLs, data URLs) -> Returned as-is.
  * 2. Relative upload paths (/uploads/... or uploads/...) -> Prefixes with backend server origin.
- * 3. Static public frontend assets (/developer_hero.jpg, /favicon.svg) -> Preserved on Vercel frontend.
+ * 3. Static public frontend assets (/favicon.svg) -> Preserved on Vercel frontend.
  * 4. Falsy/undefined values -> Returns safe fallback or empty string.
  */
 
-// Default high-quality fallback project image
-export const DEFAULT_FALLBACK_IMAGE = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80';
+export const DEFAULT_FALLBACK_IMAGE = '';
 
 // Extract backend origin from VITE_API_URL (e.g. "https://my-portfolio-api-ajt6.onrender.com")
 export const getBackendOrigin = () => {
@@ -26,8 +25,9 @@ export const getBackendOrigin = () => {
 
 /**
  * Safely resolves media URLs (Cloudinary HTTPS, Unsplash, local backend uploads, or static assets)
+ * Explicitly rejects and blocks any legacy development placeholders.
  */
-export const getMediaUrl = (url, fallback = DEFAULT_FALLBACK_IMAGE) => {
+export const getMediaUrl = (url, fallback = '') => {
   if (!url || typeof url !== 'string') {
     return fallback;
   }
@@ -35,6 +35,11 @@ export const getMediaUrl = (url, fallback = DEFAULT_FALLBACK_IMAGE) => {
   const trimmed = url.trim();
   if (!trimmed) {
     return fallback;
+  }
+
+  // Strictly block any legacy development placeholder images
+  if (trimmed.includes('developer_hero') || trimmed.includes('hero.png')) {
+    return '';
   }
 
   // 1. Data URLs or full HTTP/HTTPS URLs (Cloudinary, Unsplash, external assets)
@@ -57,17 +62,17 @@ export const getMediaUrl = (url, fallback = DEFAULT_FALLBACK_IMAGE) => {
     return cleanPath;
   }
 
-  // 3. Frontend static public assets (e.g. /developer_hero.jpg, /favicon.svg)
+  // 3. Frontend static public assets (e.g. /favicon.svg)
   return trimmed;
 };
 
 /**
  * Reusable image onError event handler to prevent broken image icons and layout breakage
  */
-export const handleImageError = (e, fallback = DEFAULT_FALLBACK_IMAGE) => {
-  if (e?.currentTarget && e.currentTarget.src !== fallback) {
-    e.currentTarget.onerror = null; // prevent looping if fallback also fails
-    e.currentTarget.src = fallback;
+export const handleImageError = (e) => {
+  if (e?.currentTarget) {
+    e.currentTarget.onerror = null;
+    e.currentTarget.style.display = 'none';
   }
 };
 

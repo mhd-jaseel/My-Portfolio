@@ -45,7 +45,7 @@ const seedDatabase = async () => {
       title: 'Full Stack Developer',
       tagline: 'I build modern, scalable web applications using the MERN stack, TypeScript and cloud technologies.',
       bio: 'Full Stack Developer with solid experience in building production-grade MERN web applications, scalable REST APIs, secure authentication workflows (JWT, OAuth 2.0, RBAC), and robust cloud deployments. Passionate about solving complex real-world challenges through elegant, high-performance web engineering.',
-      profileImage: '/developer_hero.jpg',
+      profileImage: '',
       location: 'India',
       email: 'mohammejaseel90@gmail.com',
       github: 'https://github.com/mhd-jaseel',

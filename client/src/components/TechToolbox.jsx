@@ -1,28 +1,94 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import api from '../services/api';
 import SkillIcon from './SkillIcon';
 
+// Default categories ensure instant 0ms render without waiting for backend cold start
+const defaultCategories = [
+  {
+    _id: 'c1',
+    name: 'Frontend Development',
+    slug: 'frontend',
+    description: 'Crafting responsive, pixel-perfect user interfaces with modern reactive component architectures.',
+    skills: [
+      { name: 'React.js', icon: 'Atom' },
+      { name: 'TypeScript', icon: 'FileCode2' },
+      { name: 'JavaScript', icon: 'Code' },
+      { name: 'Next.js', icon: 'Zap' },
+      { name: 'Tailwind CSS', icon: 'Wind' },
+    ]
+  },
+  {
+    _id: 'c2',
+    name: 'Backend Architecture',
+    slug: 'backend',
+    description: 'Developing scalable server-side architectures, RESTful APIs, and robust application services.',
+    skills: [
+      { name: 'Node.js', icon: 'Server' },
+      { name: 'Express.js', icon: 'Cpu' },
+      { name: 'REST API', icon: 'Globe' },
+      { name: 'JWT', icon: 'Key' },
+    ]
+  },
+  {
+    _id: 'c3',
+    name: 'Database Systems',
+    slug: 'database',
+    description: 'Managing flexible NoSQL and structured SQL database engines with transactional data integrity.',
+    skills: [
+      { name: 'MongoDB', icon: 'Database' },
+      { name: 'PostgreSQL', icon: 'Layers' },
+      { name: 'Mongoose', icon: 'FileSpreadsheet' },
+      { name: 'Prisma', icon: 'Cpu' },
+    ]
+  },
+  {
+    _id: 'c4',
+    name: 'Authentication & Security',
+    slug: 'authentication',
+    description: 'Implementing secure user authentication workflows, token validation, and granular authorization levels.',
+    skills: [
+      { name: 'JWT Authentication', icon: 'Key' },
+      { name: 'Google OAuth', icon: 'UserCheck' },
+      { name: 'Role Based Access Control', icon: 'Lock' },
+    ]
+  },
+  {
+    _id: 'c5',
+    name: 'Payment & Commerce',
+    slug: 'payments',
+    description: 'Integrating reliable digital payment gateways, automated webhook reconciliation, and refund pipelines.',
+    skills: [
+      { name: 'Razorpay', icon: 'Zap' },
+      { name: 'Stripe', icon: 'CreditCard' },
+      { name: 'Payment Gateway Integration', icon: 'CreditCard' },
+    ]
+  }
+];
+
+const getInitialCategories = () => {
+  try {
+    const cached = localStorage.getItem('cached_toolbox_categories');
+    if (cached) return JSON.parse(cached);
+  } catch (e) {}
+  return defaultCategories;
+};
+
 const TechToolbox = () => {
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState(getInitialCategories);
 
   useEffect(() => {
-    const fetchHomeCategories = async () => {
-      try {
-        const res = await api.get('/skill-categories/home');
-        if (res.data?.data) {
+    api.get('/skill-categories/home')
+      .then((res) => {
+        if (res.data?.data && res.data.data.length > 0) {
           setCategories(res.data.data);
+          try {
+            localStorage.setItem('cached_toolbox_categories', JSON.stringify(res.data.data));
+          } catch (e) {}
         }
-      } catch (err) {
-        console.error('Failed to load home categories', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchHomeCategories();
+      })
+      .catch(() => {});
   }, []);
 
   // Helper to render customized visual diagrams for categories with Admin-controlled dynamic icons
@@ -177,15 +243,6 @@ const TechToolbox = () => {
       </div>
     );
   };
-
-  if (loading) {
-    return (
-      <section className="py-10 sm:py-14 md:py-16 border-t border-[#dce7fa] text-center flex flex-col items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#1683FF] mb-3" />
-        <p className="text-xs font-bold tracking-widest uppercase text-[#5e6573]">Loading Tech Toolbox...</p>
-      </section>
-    );
-  }
 
   // Split categories: top 2 larger, bottom rest
   const topCategories = categories.slice(0, 2);

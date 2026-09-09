@@ -11,7 +11,7 @@ import {
   Loader2 
 } from 'lucide-react';
 import { Github } from '../components/SocialIcons';
-import { getMediaUrl, handleImageError } from '../utils/mediaUtils';
+import SafeImage from '../components/SafeImage';
 
 const ProjectDetailPage = () => {
   const { slug } = useParams();
@@ -142,16 +142,16 @@ const ProjectDetailPage = () => {
 
           {/* Hero Image */}
           <div className="rounded-3xl overflow-hidden border border-[#C8D6FF]/80 shadow-xl mb-14 aspect-[16/9] bg-white">
-            <img
-              src={getMediaUrl(project.thumbnail)}
+            <SafeImage
+              src={project.thumbnail}
               alt={project.title}
-              onError={handleImageError}
+              aspectRatio="16/9"
+              width={1200}
+              height={675}
+              rounded="rounded-3xl"
               fetchPriority="high"
               loading="eager"
-              decoding="async"
-              width="1200"
-              height="675"
-              className="w-full h-full object-cover object-top"
+              fallbackLabel={project.title || 'Project Preview'}
             />
           </div>
 
@@ -238,13 +238,14 @@ const ProjectDetailPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {project.gallery.map((imgUrl, gIdx) => (
                       <div key={gIdx} className="rounded-2xl overflow-hidden border border-[#dce7fa] aspect-video bg-white shadow-md">
-                        <img
-                          src={getMediaUrl(imgUrl)}
+                        <SafeImage
+                          src={imgUrl}
                           alt={`${project.title} artifact ${gIdx + 1}`}
-                          onError={handleImageError}
-                          decoding="async"
-                          className="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                          aspectRatio="16/9"
+                          rounded="rounded-2xl"
+                          className="hover:scale-105 transition-transform duration-500"
                           loading="lazy"
+                          fallbackLabel={`Artifact ${gIdx + 1}`}
                         />
                       </div>
                     ))}

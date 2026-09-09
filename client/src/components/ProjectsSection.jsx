@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getMediaUrl, handleImageError } from '../utils/mediaUtils';
+import SafeImage from './SafeImage';
 
 const ProjectsSection = ({ projects = [] }) => {
   // Display only the first 4 projects on Home page
@@ -41,15 +41,15 @@ const ProjectsSection = ({ projects = [] }) => {
               to={`/projects/${project.slug}`}
               className="block relative rounded-2xl sm:rounded-3xl overflow-hidden bg-white border border-[#dce7fa] shadow-sm aspect-[16/9] group-hover:shadow-lg transition-all duration-300"
             >
-              <img
-                src={getMediaUrl(project.thumbnail)}
+              <SafeImage
+                src={project.thumbnail}
                 alt={project.title}
-                onError={handleImageError}
-                loading="lazy"
-                decoding="async"
-                width="600"
-                height="338"
-                className="w-full h-full object-cover object-top group-hover:scale-103 transition-transform duration-500 ease-out"
+                aspectRatio="16/9"
+                width={600}
+                height={338}
+                rounded="rounded-2xl sm:rounded-3xl"
+                className="group-hover:scale-103 transition-transform duration-500 ease-out"
+                fallbackLabel={project.title || 'Project Preview'}
               />
             </Link>
 

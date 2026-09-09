@@ -12,6 +12,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { getMediaUrl } from '../../utils/mediaUtils';
+import SafeImage from '../../components/SafeImage';
 
 const AdminDashboardPage = () => {
   const [stats, setStats] = useState(null);
@@ -158,14 +159,19 @@ const AdminDashboardPage = () => {
           </div>
 
           <div className="flex items-center gap-4">
-            <img
-              src={getMediaUrl(profile?.profileImage, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80')}
-              alt={profile?.name}
-              className="w-14 h-14 rounded-2xl object-cover border border-[#dce7fa]"
-              onError={(e) => {
-                e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
-              }}
-            />
+            <div className="w-14 h-14 rounded-2xl overflow-hidden border border-[#dce7fa] bg-[#f0f6ff] shrink-0 flex items-center justify-center">
+              {profile?.profileImage ? (
+                <SafeImage
+                  src={profile.profileImage}
+                  alt={profile?.name || 'Profile'}
+                  aspectRatio="1/1"
+                  rounded="rounded-2xl"
+                  fallbackLabel="No Photo"
+                />
+              ) : (
+                <User className="w-6 h-6 text-[#1683FF]" />
+              )}
+            </div>
             <div>
               <h3 className="text-sm font-bold text-[#1a1a1a]">{profile?.name}</h3>
               <p className="text-xs text-[#666666]">{profile?.title}</p>
@@ -208,10 +214,15 @@ const AdminDashboardPage = () => {
                   className="p-3 rounded-2xl bg-[#f8fbff] border border-[#dce7fa] hover:border-[#1683FF]/40 flex items-center justify-between gap-4 transition-all"
                 >
                   <div className="flex items-center gap-3">
-                    <img
-                      src={getMediaUrl(p.thumbnail)}
+                    <SafeImage
+                      src={p.thumbnail}
                       alt={p.title}
-                      className="w-10 h-10 rounded-xl object-cover bg-slate-100 border border-[#dce7fa]"
+                      aspectRatio="1/1"
+                      width={40}
+                      height={40}
+                      rounded="rounded-xl"
+                      containerClassName="w-10 h-10 shrink-0 border border-[#dce7fa]"
+                      fallbackLabel="No Img"
                     />
                     <div>
                       <div className="flex items-center gap-2">

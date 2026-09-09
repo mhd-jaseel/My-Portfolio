@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, User } from 'lucide-react';
 import { getMediaUrl } from '../utils/mediaUtils';
 
 const Hero = ({ profile }) => {
-  const profileImg = getMediaUrl(profile?.profileImage, '/developer_hero.jpg');
+  const adminImgUrl = profile?.profileImage ? getMediaUrl(profile.profileImage, '') : '';
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  // Reset load/error state if admin image URL updates
+  useEffect(() => {
+    if (adminImgUrl) {
+      setHasError(false);
+      setIsLoaded(false);
+    } else {
+      setIsLoaded(false);
+      setHasError(false);
+    }
+  }, [adminImgUrl]);
+
   const name = profile?.name || 'MOHAMMED JASEEL';
   const bio = profile?.bio || 'A Full Stack Developer who loves building modern web applications with scalable backends to deliver meaningful digital solutions.';
 
@@ -27,7 +41,7 @@ const Hero = ({ profile }) => {
         COMPACT ASYMMETRICAL EDITORIAL COMPOSITION (3 Visual Zones):
         - LEFT: Compact condensed name (I AM MOHAMMED JASEEL) + tight bio + dual CTA buttons
         - CENTER: Balanced, proportional portrait emerging from sky clouds
-        - RIGHT: "A WEB </> DEVELOPER" scaled down to match reference
+        - RIGHT: "A FULL </> STACK DEVELOPER" beside portrait
       */}
       <div className="content-canvas relative w-full">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-3 items-center min-h-[62vh] lg:min-h-[68vh]">
@@ -96,7 +110,7 @@ const Hero = ({ profile }) => {
             >
               {/* Masked image container with soft curved/rounded outer shape and gentle bottom fade */}
               <div 
-                className="w-full overflow-hidden"
+                className="w-full overflow-hidden rounded-[20px] aspect-[430/520] min-h-[380px] sm:min-h-[460px] lg:min-h-[520px] relative flex items-center justify-center bg-[#f5f8ff]"
                 style={{
                   WebkitMaskImage: `
                     radial-gradient(ellipse 96% 94% at 50% 42%, black 64%, rgba(0,0,0,0.85) 78%, rgba(0,0,0,0.3) 90%, transparent 100%),
@@ -110,26 +124,61 @@ const Hero = ({ profile }) => {
                   maskComposite: 'intersect',
                 }}
               >
-                <img
-                  src={profileImg}
-                  alt={name}
-                  fetchPriority="high"
-                  loading="eager"
-                  decoding="async"
-                  width="430"
-                  height="520"
-                  onError={(e) => {
-                    if (e.currentTarget.src !== window.location.origin + '/developer_hero.jpg' && !e.currentTarget.src.endsWith('/developer_hero.jpg')) {
-                      e.currentTarget.src = '/developer_hero.jpg';
-                    }
-                  }}
-                  className="w-full h-auto max-h-[64vh] object-contain object-top mix-blend-multiply contrast-[1.02] brightness-[1.01]"
-                />
+                {/* 1. Admin Image Available: render with smooth fade-in */}
+                {adminImgUrl && !hasError ? (
+                  <>
+                    {!isLoaded && (
+                      <div className="absolute inset-0 bg-gradient-to-b from-[#edf3fd] via-[#e2edfc] to-[#d8e7fa] animate-pulse flex flex-col items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-white/70 border border-[#1683FF]/20 flex items-center justify-center text-[#1683FF]/40 shadow-xs mb-3">
+                          <User className="w-8 h-8" />
+                        </div>
+                        <div className="w-24 h-2 rounded-full bg-[#1683FF]/15 animate-pulse" />
+                      </div>
+                    )}
+
+                    <img
+                      src={adminImgUrl}
+                      alt={name}
+                      fetchPriority="high"
+                      loading="eager"
+                      decoding="async"
+                      width="430"
+                      height="520"
+                      onLoad={() => setIsLoaded(true)}
+                      onError={() => setHasError(true)}
+                      className={`w-full h-full object-cover object-top mix-blend-multiply contrast-[1.02] brightness-[1.01] rounded-[20px] transition-opacity duration-500 ${
+                        isLoaded ? 'opacity-100' : 'opacity-0'
+                      }`}
+                    />
+                  </>
+                ) : hasError ? (
+                  /* 2. Error Fallback State: Clean HTML/CSS Placeholder */
+                  <div className="w-full h-full bg-gradient-to-b from-[#f8fafc] to-[#eef4fc] border border-[#dce7fa] rounded-[20px] flex flex-col items-center justify-center p-6 text-center select-none">
+                    <div className="w-16 h-16 rounded-2xl bg-white border border-[#1683FF]/30 flex items-center justify-center text-[#1683FF] shadow-sm mb-3">
+                      <User className="w-8 h-8" />
+                    </div>
+                    <span className="text-sm font-bold text-[#111111] tracking-wide">
+                      {name}
+                    </span>
+                    <span className="text-xs text-[#1683FF] font-mono mt-1">
+                      Full Stack Developer
+                    </span>
+                  </div>
+                ) : (
+                  /* 3. Initial Loading Skeleton State (while waiting for Admin API data) */
+                  <div className="w-full h-full bg-gradient-to-b from-[#edf3fd] via-[#e2edfc] to-[#d8e7fa] animate-pulse rounded-[20px] flex flex-col items-center justify-center select-none">
+                    <div className="w-16 h-16 rounded-full bg-white/70 border border-[#1683FF]/20 flex items-center justify-center text-[#1683FF]/40 shadow-xs mb-3">
+                      <User className="w-8 h-8" />
+                    </div>
+                    <div className="w-28 h-2.5 rounded-full bg-[#1683FF]/15 mb-2" />
+                    <div className="w-16 h-2 rounded-full bg-[#1683FF]/10" />
+                  </div>
+                )}
               </div>
             </motion.div>
           </div>
 
-          {/* 3. RIGHT ZONE: A WEB </> DEVELOPER (Scaled down, elegantly positioned beside portrait) */}
+          {/* 3. RIGHT ZONE: A FULL </> STACK DEVELOPER */}
           <div className="lg:col-span-3 z-20 text-left lg:pl-3 flex justify-start items-center">
             <motion.div
               initial={{ opacity: 0, x: 16 }}
@@ -137,12 +186,12 @@ const Hero = ({ profile }) => {
               transition={{ duration: 0.55, delay: 0.3 }}
               className="flex flex-col items-start"
             >
-              <div className="font-display text-3xl sm:text-4xl md:text-4xl lg:text-[52px] xl:text-[62px] text-[#111111] leading-[0.88] flex items-center gap-1.5">
-                <span>A WEB</span>
-                <span className="text-[#1683FF] font-mono text-xl sm:text-2xl lg:text-[32px] font-bold">&lt;/&gt;</span>
+              <div className="font-display text-3xl sm:text-4xl md:text-4xl lg:text-[44px] xl:text-[54px] text-[#111111] leading-[0.88] flex items-center gap-1.5 whitespace-nowrap">
+                <span>A FULL</span>
+                <span className="text-[#1683FF] font-mono text-xl sm:text-2xl lg:text-[28px] xl:text-[32px] font-bold">&lt;/&gt;</span>
               </div>
-              <div className="font-display text-3xl sm:text-4xl md:text-4xl lg:text-[52px] xl:text-[62px] text-[#111111] leading-[0.88]">
-                DEVELOPER
+              <div className="font-display text-3xl sm:text-4xl md:text-4xl lg:text-[44px] xl:text-[54px] text-[#111111] leading-[0.88] whitespace-nowrap">
+                STACK DEVELOPER
               </div>
             </motion.div>
           </div>

@@ -13,7 +13,7 @@ import {
   Code2
 } from 'lucide-react';
 import { showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
-import { getMediaUrl, handleImageError } from '../../utils/mediaUtils';
+import SafeImage from '../../components/SafeImage';
 
 const AdminProjectFormPage = () => {
   const { id } = useParams();
@@ -404,13 +404,15 @@ const AdminProjectFormPage = () => {
           <div className="space-y-2">
             <label className="block text-xs font-semibold text-[#1a1a1a]">Main Image / Thumbnail *</label>
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-              <div className="w-28 h-20 rounded-xl overflow-hidden bg-[#f8fbff] border border-[#dce7fa] shrink-0">
+              <div className="w-28 h-20 rounded-xl overflow-hidden bg-[#f8fbff] border border-[#dce7fa] shrink-0 flex items-center justify-center">
                 {formData.thumbnail ? (
-                  <img
-                    src={getMediaUrl(formData.thumbnail)}
+                  <SafeImage
+                    src={formData.thumbnail}
                     alt="Thumbnail preview"
+                    aspectRatio="28/20"
+                    rounded="rounded-xl"
+                    fallbackLabel="No Image"
                     className="w-full h-full object-cover"
-                    onError={handleImageError}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-[10px] text-[#8a99ad]">No Image</div>
@@ -461,11 +463,13 @@ const AdminProjectFormPage = () => {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {formData.gallery?.map((imgUrl, idx) => (
                 <div key={idx} className="relative aspect-video rounded-xl overflow-hidden border border-[#dce7fa] group bg-[#f8fbff]">
-                  <img
-                    src={getMediaUrl(imgUrl)}
+                  <SafeImage
+                    src={imgUrl}
                     alt={`Gallery ${idx}`}
+                    aspectRatio="16/9"
+                    rounded="rounded-xl"
+                    fallbackLabel="No Image"
                     className="w-full h-full object-cover"
-                    onError={handleImageError}
                   />
                   <button
                     type="button"

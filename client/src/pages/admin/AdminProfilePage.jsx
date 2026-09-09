@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
 import { getMediaUrl } from '../../utils/mediaUtils';
+import SafeImage from '../../components/SafeImage';
 
 const AdminProfilePage = () => {
   const [formData, setFormData] = useState({
@@ -336,15 +337,20 @@ const AdminProfilePage = () => {
 
           {/* Profile Photo */}
           <div className="flex flex-col sm:flex-row items-center gap-4 p-4 rounded-xl bg-[#f8fbff] border border-[#dce7fa]">
-            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[#dce7fa] bg-white shrink-0 shadow-xs">
-              <img
-                src={getMediaUrl(formData.profileImage, 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80')}
-                alt="Profile photo"
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=800&q=80';
-                }}
-              />
+            <div className="relative w-20 h-20 rounded-2xl overflow-hidden border border-[#dce7fa] bg-white shrink-0 shadow-xs flex items-center justify-center">
+              {formData.profileImage ? (
+                <SafeImage
+                  src={formData.profileImage}
+                  alt="Profile photo"
+                  aspectRatio="1/1"
+                  rounded="rounded-2xl"
+                  fallbackLabel="No Photo"
+                />
+              ) : (
+                <div className="w-full h-full bg-[#f4f8ff] flex flex-col items-center justify-center text-[#1683FF]/50">
+                  <User className="w-8 h-8" />
+                </div>
+              )}
               {uploadingImage && (
                 <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
                   <Loader2 className="w-6 h-6 animate-spin text-[#1683FF]" />

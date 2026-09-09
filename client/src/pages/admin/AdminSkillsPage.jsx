@@ -442,6 +442,7 @@ const AdminSkillsPage = () => {
         <img
           src={getMediaUrl(icon)}
           alt={name}
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
           className="w-5 h-5 object-contain inline-block shrink-0 rounded-xs"
         />
       );

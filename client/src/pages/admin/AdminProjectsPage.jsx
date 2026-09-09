@@ -16,7 +16,7 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { showConfirm, showSuccess, showError, toastSuccess, toastError } from '../../utils/alertUtils';
-import { getMediaUrl, handleImageError } from '../../utils/mediaUtils';
+import SafeImage from '../../components/SafeImage';
 
 const AdminProjectsPage = () => {
   const [projects, setProjects] = useState([]);
@@ -260,14 +260,16 @@ const AdminProjectsPage = () => {
               <div className="flex items-center gap-4 flex-1 min-w-0">
                 {/* Thumbnail */}
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-[#f0f6ff] border border-[#dce7fa] shrink-0 relative">
-                  <img
-                    src={getMediaUrl(project.thumbnail)}
+                  <SafeImage
+                    src={project.thumbnail}
                     alt={project.title}
-                    onError={handleImageError}
+                    aspectRatio="1/1"
+                    rounded="rounded-xl"
+                    fallbackLabel="No Image"
                     className="w-full h-full object-cover"
                   />
                   {project.showOnHome && (
-                    <div className="absolute top-1 left-1 bg-[#1683FF] text-white p-1 rounded-md shadow-xs" title="Featured on Home">
+                    <div className="absolute top-1 left-1 bg-[#1683FF] text-white p-1 rounded-md shadow-xs z-10" title="Featured on Home">
                       <Home className="w-2.5 h-2.5" />
                     </div>
                   )}

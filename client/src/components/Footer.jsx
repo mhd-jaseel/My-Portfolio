@@ -13,19 +13,21 @@ const Footer = ({ profile: propProfile }) => {
       return;
     }
     
-    // Fetch profile fallback if not provided via props
-    const fetchProfile = async () => {
-      try {
-        const res = await api.get('/profile');
-        if (res.data?.data) {
-          setProfile(res.data.data);
+    // Only fetch if profile was never passed by a parent component
+    if (propProfile === undefined) {
+      const fetchProfile = async () => {
+        try {
+          const res = await api.get('/profile');
+          if (res.data?.data) {
+            setProfile(res.data.data);
+          }
+        } catch (err) {
+          // Silently use defaults if profile endpoint fails
         }
-      } catch (err) {
-        // Silently use defaults if profile endpoint fails
-      }
-    };
+      };
 
-    fetchProfile();
+      fetchProfile();
+    }
   }, [propProfile]);
 
   const email = profile?.email || 'mohammejaseel90@gmail.com';
