@@ -11,6 +11,8 @@ import SafeImage from '../components/SafeImage';
 // In-memory cache to prevent refetching when navigating back and forth
 let cachedProjects = null;
 let cachedProfile = null;
+let lastProjectsFetchTime = 0;
+const PROJECTS_CACHE_TTL = 3 * 60 * 1000; // 3 minutes
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState(cachedProjects || []);
@@ -18,7 +20,16 @@ const ProjectsPage = () => {
   const [loading, setLoading] = useState(!cachedProjects);
   const [error, setError] = useState(null);
 
-  const fetchData = useCallback(async (signal) => {
+  const fetchData = useCallback(async (signal, force = false) => {
+    // If we have cached projects within TTL and not forcing a refresh, skip network call
+    const isFresh = Date.now() - lastProjectsFetchTime < PROJECTS_CACHE_TTL;
+    if (!force && cachedProjects && isFresh) {
+      setProjects(cachedProjects);
+      if (cachedProfile) setProfile(cachedProfile);
+      setLoading(false);
+      return;
+    }
+
     setError(null);
     if (!cachedProjects) {
       setLoading(true);
@@ -38,6 +49,7 @@ const ProjectsPage = () => {
         cachedProfile = profRes.data.data;
         setProfile(profRes.data.data);
       }
+      lastProjectsFetchTime = Date.now();
     } catch (err) {
       if (err.name === 'CanceledError' || err.name === 'AbortError') return;
       console.error('Failed to load projects:', err);
@@ -95,7 +107,7 @@ const ProjectsPage = () => {
                 <AlertCircle className="w-10 h-10 text-amber-500 mx-auto" />
                 <p className="text-sm font-semibold text-[#1a1a1a]">{error}</p>
                 <button
-                  onClick={() => fetchData()}
+                  onClick={() => fetchData(undefined, true)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1683FF] hover:bg-[#1371dc] text-white font-bold text-xs uppercase tracking-wider transition-all shadow-sm"
                 >
                   <RefreshCw className="w-4 h-4" />

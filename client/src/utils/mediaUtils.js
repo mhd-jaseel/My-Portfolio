@@ -11,6 +11,20 @@
 
 export const DEFAULT_FALLBACK_IMAGE = '';
 
+// Shared session-level tracker of image URLs that have loaded successfully in the browser
+export const globalLoadedImageUrls = new Set();
+
+export const markImageLoaded = (url) => {
+  if (url && typeof url === 'string') {
+    globalLoadedImageUrls.add(url);
+  }
+};
+
+export const isImageLoaded = (url) => {
+  if (!url || typeof url !== 'string') return false;
+  return globalLoadedImageUrls.has(url);
+};
+
 // Extract backend origin from VITE_API_URL (e.g. "https://my-portfolio-api-ajt6.onrender.com")
 export const getBackendOrigin = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -67,6 +81,47 @@ export const getMediaUrl = (url, fallback = '') => {
 };
 
 /**
+ * Optimizes image URLs for faster delivery, smaller payload, and modern formats (WebP/AVIF).
+ * - Cloudinary: Injects automated format selection (f_auto), intelligent compression (q_auto:good),
+ *   and dimension limit (w_${width},c_limit) so huge multi-megabyte admin uploads are scaled down
+ *   to the actual container size.
+ * - Unsplash: Applies query parameters (w, q, auto=format, fit=crop).
+ * - Leaves local uploads and static SVGs intact.
+ */
+export const getOptimizedMediaUrl = (url, options = {}) => {
+  const resolved = getMediaUrl(url, '');
+  if (!resolved || typeof resolved !== 'string') return '';
+
+  const { width = 800, quality = 75 } = options;
+
+  // 1. Cloudinary Optimization (Dynamic delivery)
+  if (resolved.includes('cloudinary.com') && resolved.includes('/image/upload/')) {
+    // If it already has transformation flags, return as-is
+    if (resolved.match(/\/image\/upload\/[a-z]_[a-z0-9_,]+\//)) {
+      return resolved;
+    }
+    const transform = `f_auto,q_auto,w_${width},c_limit`;
+    return resolved.replace('/image/upload/', `/image/upload/${transform}/`);
+  }
+
+  // 2. Unsplash Optimization (Query params)
+  if (resolved.includes('images.unsplash.com')) {
+    try {
+      const urlObj = new URL(resolved);
+      urlObj.searchParams.set('w', width.toString());
+      urlObj.searchParams.set('q', quality.toString());
+      urlObj.searchParams.set('auto', 'format');
+      urlObj.searchParams.set('fit', 'crop');
+      return urlObj.toString();
+    } catch {
+      return resolved;
+    }
+  }
+
+  return resolved;
+};
+
+/**
  * Reusable image onError event handler to prevent broken image icons and layout breakage
  */
 export const handleImageError = (e) => {
@@ -77,4 +132,5 @@ export const handleImageError = (e) => {
 };
 
 export default getMediaUrl;
+
 

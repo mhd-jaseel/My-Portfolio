@@ -28,7 +28,7 @@ const defaultProfile = {
   },
   meetMeVideo: {
     showOnHome: true,
-    thumbnailUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=1200&q=80',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=75',
     videoUrl: ''
   }
 };
@@ -39,7 +39,7 @@ const defaultProjects = [
     title: 'DynaVue',
     slug: 'dynavue',
     category: 'Full Stack Portfolio & Booking Platform',
-    thumbnail: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=1200&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1542038784456-1ea8e935640e?auto=format&fit=crop&w=720&q=75',
     technologies: ['React', 'Vite', 'Node.js', 'Express.js', 'MongoDB', 'Socket.io', 'Cloudinary']
   },
   {
@@ -47,7 +47,7 @@ const defaultProjects = [
     title: 'VAULT.CO',
     slug: 'vault-co',
     category: 'Production E-Commerce Platform',
-    thumbnail: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=720&q=75',
     technologies: ['React', 'Tailwind CSS', 'Node.js', 'Express.js', 'MongoDB', 'Razorpay']
   },
   {
@@ -55,7 +55,7 @@ const defaultProjects = [
     title: 'Focus Flow',
     slug: 'focus-flow',
     category: 'Smart Productivity & Task Manager',
-    thumbnail: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=1200&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?auto=format&fit=crop&w=720&q=75',
     technologies: ['React', 'Redux Toolkit', 'Node.js', 'Express.js', 'MongoDB']
   },
   {
@@ -63,12 +63,19 @@ const defaultProjects = [
     title: 'KM Store',
     slug: 'km-store',
     category: 'Full-Stack Electronics E-Commerce',
-    thumbnail: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=1200&q=80',
+    thumbnail: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?auto=format&fit=crop&w=720&q=75',
     technologies: ['React', 'Node.js', 'Express.js', 'MongoDB', 'Razorpay', 'Tailwind CSS']
   }
 ];
 
+// Module-level in-memory cache to prevent redundant re-fetching and re-rendering on route changes
+let cachedHomeProfile = null;
+let cachedHomeProjects = null;
+let lastHomeFetchTime = 0;
+const HOME_CACHE_TTL = 3 * 60 * 1000; // 3 minutes
+
 const getInitialProfile = () => {
+  if (cachedHomeProfile) return cachedHomeProfile;
   try {
     const cached = localStorage.getItem('cached_profile');
     if (cached) {
@@ -76,6 +83,7 @@ const getInitialProfile = () => {
       if (parsed.profileImage && (parsed.profileImage.includes('developer_hero') || parsed.profileImage.includes('hero.png'))) {
         parsed.profileImage = '';
       }
+      cachedHomeProfile = parsed;
       return parsed;
     }
   } catch (e) {}
@@ -83,9 +91,14 @@ const getInitialProfile = () => {
 };
 
 const getInitialProjects = () => {
+  if (cachedHomeProjects) return cachedHomeProjects;
   try {
     const cached = localStorage.getItem('cached_projects_home');
-    if (cached) return JSON.parse(cached);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      cachedHomeProjects = parsed;
+      return parsed;
+    }
   } catch (e) {}
   return defaultProjects;
 };
@@ -95,28 +108,35 @@ const HomePage = () => {
   const [projects, setProjects] = useState(getInitialProjects);
 
   useEffect(() => {
-    // Non-blocking parallel background sync
-    api.get('/profile')
-      .then((res) => {
-        if (res.data?.data) {
-          setProfile(res.data.data);
-          try {
-            localStorage.setItem('cached_profile', JSON.stringify(res.data.data));
-          } catch (e) {}
-        }
-      })
-      .catch(() => {});
+    // If data was fetched recently within TTL, skip redundant network requests
+    const isFresh = Date.now() - lastHomeFetchTime < HOME_CACHE_TTL;
+    if (cachedHomeProfile && cachedHomeProjects && isFresh) {
+      return;
+    }
 
-    api.get('/projects?homeOnly=true')
-      .then((res) => {
-        if (res.data?.data && res.data.data.length > 0) {
-          setProjects(res.data.data);
-          try {
-            localStorage.setItem('cached_projects_home', JSON.stringify(res.data.data));
-          } catch (e) {}
-        }
-      })
-      .catch(() => {});
+    // Non-blocking parallel background sync
+    Promise.all([
+      api.get('/profile').catch(() => null),
+      api.get('/projects?homeOnly=true').catch(() => null),
+    ]).then(([profileRes, projectsRes]) => {
+      if (profileRes?.data?.data) {
+        cachedHomeProfile = profileRes.data.data;
+        setProfile(profileRes.data.data);
+        try {
+          localStorage.setItem('cached_profile', JSON.stringify(profileRes.data.data));
+        } catch (e) {}
+      }
+
+      if (projectsRes?.data?.data && projectsRes.data.data.length > 0) {
+        cachedHomeProjects = projectsRes.data.data;
+        setProjects(projectsRes.data.data);
+        try {
+          localStorage.setItem('cached_projects_home', JSON.stringify(projectsRes.data.data));
+        } catch (e) {}
+      }
+
+      lastHomeFetchTime = Date.now();
+    });
   }, []);
 
   return (

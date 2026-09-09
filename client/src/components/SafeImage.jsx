@@ -1,14 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ImageIcon } from 'lucide-react';
-import { getMediaUrl } from '../utils/mediaUtils';
+import { getOptimizedMediaUrl, isImageLoaded, markImageLoaded } from '../utils/mediaUtils';
 
 /**
  * Reusable SafeImage component with:
  * 1. Zero layout shift (preserves dimensions and aspect ratio).
- * 2. HTML/CSS shimmer loading skeleton.
- * 3. Graceful HTML/CSS fallback placeholder if URL fails or is missing.
- * 4. Zero broken image icon or console errors.
- * 5. Complete absence of any legacy AI placeholder assets.
+ * 2. Session-persisted load state: immediately displays cached images with ZERO skeleton flicker when navigating routes.
+ * 3. Dynamic payload optimization: formats as WebP/AVIF via Cloudinary/Unsplash with dimension caps.
+ * 4. Graceful HTML/CSS fallback placeholder if URL fails or is missing.
+ * 5. Zero broken image icon or console errors.
+ * 6. Complete absence of any legacy AI placeholder assets.
  */
 const SafeImage = ({
   src,
@@ -28,24 +29,53 @@ const SafeImage = ({
   style = {},
   onClick,
 }) => {
-  const resolvedSrc = getMediaUrl(src, '');
-  const [hasError, setHasError] = useState(!resolvedSrc);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const optimizedSrc = getOptimizedMediaUrl(src, { width: width || 800 });
+  const imgRef = useRef(null);
 
-  // Reset state if src changes
+  // Check if image was previously loaded anywhere in this browser session
+  const isAlreadyLoaded = Boolean(optimizedSrc && isImageLoaded(optimizedSrc));
+  const [hasError, setHasError] = useState(!optimizedSrc);
+  const [isLoaded, setIsLoaded] = useState(isAlreadyLoaded);
+
+  // Synchronize state when src or width changes
   useEffect(() => {
-    const url = getMediaUrl(src, '');
+    const url = getOptimizedMediaUrl(src, { width: width || 800 });
     if (!url) {
       setHasError(true);
       setIsLoaded(false);
     } else {
       setHasError(false);
-      setIsLoaded(false);
+      if (isImageLoaded(url)) {
+        setIsLoaded(true);
+      } else {
+        setIsLoaded(false);
+      }
     }
-  }, [src]);
+  }, [src, width]);
+
+  // If the browser already has the image cached in memory, complete is true on mount
+  useEffect(() => {
+    if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
+      if (optimizedSrc) {
+        markImageLoaded(optimizedSrc);
+      }
+      setIsLoaded(true);
+    }
+  }, [optimizedSrc]);
+
+  const handleLoad = () => {
+    if (optimizedSrc) {
+      markImageLoaded(optimizedSrc);
+    }
+    setIsLoaded(true);
+  };
+
+  const handleError = () => {
+    setHasError(true);
+  };
 
   // Fallback Placeholder UI (Pure HTML/CSS)
-  if (hasError || !resolvedSrc) {
+  if (hasError || !optimizedSrc) {
     return (
       <div
         className={`relative w-full overflow-hidden bg-[#f4f8ff] border border-[#dce7fa] flex flex-col items-center justify-center p-4 text-center select-none ${rounded} ${containerClassName}`}
@@ -81,7 +111,7 @@ const SafeImage = ({
       }}
       onClick={onClick}
     >
-      {/* Shimmer loading skeleton underneath image */}
+      {/* Shimmer loading skeleton underneath image (rendered only when image is genuinely not loaded) */}
       {!isLoaded && (
         <div className="absolute inset-0 bg-gradient-to-r from-[#edf3fc] via-[#f7faff] to-[#edf3fc] animate-pulse flex items-center justify-center">
           <div className="w-8 h-8 rounded-lg bg-white/60 border border-[#1683FF]/15 flex items-center justify-center text-[#1683FF]/40">
@@ -92,21 +122,23 @@ const SafeImage = ({
 
       {/* Actual Image */}
       <img
-        src={resolvedSrc}
+        ref={imgRef}
+        src={optimizedSrc}
         alt={alt}
         width={width}
         height={height}
         loading={loading}
         fetchPriority={fetchPriority}
         decoding={decoding}
-        onLoad={() => setIsLoaded(true)}
-        onError={() => setHasError(true)}
-        className={`w-full h-full ${objectFit} transition-opacity duration-300 ${
-          isLoaded ? 'opacity-100' : 'opacity-0'
-        } ${className}`}
+        onLoad={handleLoad}
+        onError={handleError}
+        className={`w-full h-full ${objectFit} ${
+          isAlreadyLoaded ? '' : 'transition-opacity duration-300'
+        } ${isLoaded ? 'opacity-100' : 'opacity-0'} ${className}`}
       />
     </div>
   );
 };
 
 export default SafeImage;
+

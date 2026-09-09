@@ -39,8 +39,14 @@ app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Static uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Static uploads directory with 30-day browser/CDN caching
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+  maxAge: '30d',
+  immutable: true,
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'public, max-age=2592000, immutable');
+  },
+}));
 
 // Routes
 app.use('/api', publicRoutes);

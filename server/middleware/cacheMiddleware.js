@@ -15,6 +15,8 @@ const publicCache = (ttlSeconds = 60) => (req, res, next) => {
   const cached = cacheStore.get(key);
   const now = Date.now();
 
+  res.setHeader('Cache-Control', `public, max-age=${ttlSeconds}, stale-while-revalidate=${ttlSeconds * 2}`);
+
   if (cached && cached.expiry > now) {
     res.setHeader('X-Cache', 'HIT');
     return res.status(200).json(cached.data);

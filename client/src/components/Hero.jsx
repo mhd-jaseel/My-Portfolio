@@ -1,26 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowRight, User } from 'lucide-react';
-import { getMediaUrl } from '../utils/mediaUtils';
+import { getOptimizedMediaUrl, isImageLoaded, markImageLoaded } from '../utils/mediaUtils';
 
 const Hero = ({ profile }) => {
-  const adminImgUrl = profile?.profileImage ? getMediaUrl(profile.profileImage, '') : '';
-  const [isLoaded, setIsLoaded] = useState(false);
+  const rawImage = profile?.profileImage || '';
+  const adminImgUrl = rawImage ? getOptimizedMediaUrl(rawImage, { width: 860 }) : '';
+  const isAlreadyLoaded = Boolean(adminImgUrl && isImageLoaded(adminImgUrl));
+  const [isLoaded, setIsLoaded] = useState(isAlreadyLoaded);
   const [hasError, setHasError] = useState(false);
+  const heroImgRef = useRef(null);
 
-  // Reset load/error state if admin image URL updates
+  // Sync state if admin image URL updates
   useEffect(() => {
     if (adminImgUrl) {
       setHasError(false);
-      setIsLoaded(false);
+      if (isImageLoaded(adminImgUrl)) {
+        setIsLoaded(true);
+      } else {
+        setIsLoaded(false);
+      }
     } else {
       setIsLoaded(false);
       setHasError(false);
     }
   }, [adminImgUrl]);
 
+  // If image is already cached in browser memory upon component mounting
+  useEffect(() => {
+    if (heroImgRef.current && heroImgRef.current.complete && heroImgRef.current.naturalWidth > 0) {
+      if (adminImgUrl) {
+        markImageLoaded(adminImgUrl);
+      }
+      setIsLoaded(true);
+    }
+  }, [adminImgUrl]);
+
+  const handleHeroLoad = () => {
+    if (adminImgUrl) {
+      markImageLoaded(adminImgUrl);
+    }
+    setIsLoaded(true);
+  };
+
   const name = profile?.name || 'MOHAMMED JASEEL';
   const bio = profile?.bio || 'A Full Stack Developer who loves building modern web applications with scalable backends to deliver meaningful digital solutions.';
+
 
   return (
     <section className="relative w-full pt-20 sm:pt-24 md:pt-28 pb-14 sm:pb-16 lg:pb-20 overflow-hidden flex flex-col justify-center bg-white">
@@ -137,6 +162,7 @@ const Hero = ({ profile }) => {
                     )}
 
                     <img
+                      ref={heroImgRef}
                       src={adminImgUrl}
                       alt={name}
                       fetchPriority="high"
@@ -144,11 +170,11 @@ const Hero = ({ profile }) => {
                       decoding="async"
                       width="430"
                       height="520"
-                      onLoad={() => setIsLoaded(true)}
+                      onLoad={handleHeroLoad}
                       onError={() => setHasError(true)}
-                      className={`w-full h-full object-cover object-top mix-blend-multiply contrast-[1.02] brightness-[1.01] rounded-[20px] transition-opacity duration-500 ${
-                        isLoaded ? 'opacity-100' : 'opacity-0'
-                      }`}
+                      className={`w-full h-full object-cover object-top mix-blend-multiply contrast-[1.02] brightness-[1.01] rounded-[20px] ${
+                        isAlreadyLoaded ? '' : 'transition-opacity duration-300'
+                      } ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
                     />
                   </>
                 ) : hasError ? (
